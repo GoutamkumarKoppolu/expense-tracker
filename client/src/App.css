@@ -8,6 +8,13 @@ header {
   margin-bottom: 20px;
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .error-banner {
   background: var(--accent-bg);
   color: var(--negative);
@@ -142,6 +149,10 @@ button.secondary {
   color: var(--negative);
 }
 
+.stat-value.savings {
+  color: var(--savings);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -175,6 +186,10 @@ th {
   color: var(--negative);
 }
 
+.row-saving .amount-col {
+  color: var(--savings);
+}
+
 .row-actions {
   text-align: right;
   white-space: nowrap;
@@ -197,4 +212,80 @@ th {
   opacity: 0.7;
   font-size: 14px;
   padding: 8px 0;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.option-list {
+  margin-bottom: 20px;
+}
+
+.option-list ul {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.option-add-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.option-add-form input,
+.option-add-form select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.option-add-form input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.kind-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kind-earning {
+  background: var(--accent-bg);
+  color: var(--positive);
+}
+
+.kind-expense {
+  background: var(--accent-bg);
+  color: var(--negative);
+}
+
+.kind-saving {
+  background: var(--savings-bg);
+  color: var(--savings);
 }

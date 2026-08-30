@@ -3,14 +3,24 @@ import { useEffect, useState } from "react";
 const today = () => new Date().toISOString().slice(0, 10);
 
 const emptyForm = {
-  type: "expense",
+  type: "",
   amount: "",
   tag: "",
+  payment_method: "",
+  payment_source: "",
   date: today(),
   note: "",
 };
 
-export default function TransactionForm({ existingTags, editingTransaction, onSubmit, onCancelEdit }) {
+export default function TransactionForm({
+  existingTags,
+  transactionTypes,
+  paymentMethods,
+  paymentSources,
+  editingTransaction,
+  onSubmit,
+  onCancelEdit,
+}) {
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -19,6 +29,8 @@ export default function TransactionForm({ existingTags, editingTransaction, onSu
         type: editingTransaction.type,
         amount: editingTransaction.amount,
         tag: editingTransaction.tag,
+        payment_method: editingTransaction.payment_method || "",
+        payment_source: editingTransaction.payment_source || "",
         date: editingTransaction.date.slice(0, 10),
         note: editingTransaction.note || "",
       });
@@ -26,6 +38,13 @@ export default function TransactionForm({ existingTags, editingTransaction, onSu
       setForm(emptyForm);
     }
   }, [editingTransaction]);
+
+  // Default to the first known transaction type once the list has loaded.
+  useEffect(() => {
+    if (!editingTransaction && !form.type && transactionTypes.length) {
+      setForm((f) => ({ ...f, type: transactionTypes[0].name }));
+    }
+  }, [transactionTypes, editingTransaction, form.type]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -43,9 +62,15 @@ export default function TransactionForm({ existingTags, editingTransaction, onSu
       <div className="field-row">
         <label>
           Type
-          <select name="type" value={form.type} onChange={handleChange}>
-            <option value="expense">Expense</option>
-            <option value="earning">Earning</option>
+          <select name="type" value={form.type} onChange={handleChange} required>
+            <option value="" disabled>
+              Select type
+            </option>
+            {transactionTypes.map((t) => (
+              <option key={t.id} value={t.name}>
+                {t.name}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -90,6 +115,32 @@ export default function TransactionForm({ existingTags, editingTransaction, onSu
         <label className="grow">
           Note (optional)
           <input type="text" name="note" value={form.note} onChange={handleChange} />
+        </label>
+      </div>
+
+      <div className="field-row">
+        <label>
+          Payment Method (optional)
+          <select name="payment_method" value={form.payment_method} onChange={handleChange}>
+            <option value="">— none —</option>
+            {paymentMethods.map((m) => (
+              <option key={m.id} value={m.name}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Payment Source (optional)
+          <select name="payment_source" value={form.payment_source} onChange={handleChange}>
+            <option value="">— none —</option>
+            {paymentSources.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

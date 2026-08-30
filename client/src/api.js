@@ -21,6 +21,37 @@ export function fetchTags() {
   return fetch(`${API_BASE}/transactions/tags`).then(handle);
 }
 
+export function fetchSavingsOverall() {
+  return fetch(`${API_BASE}/transactions/savings-overall`).then(handle);
+}
+
+const OPTION_KINDS = ["transaction-types", "payment-methods", "payment-sources"];
+
+export function fetchOptions(kind) {
+  return fetch(`${API_BASE}/${kind}`).then(handle);
+}
+
+// `payload` is either a plain name string, or (for transaction-types) an
+// object like { name, kind } where kind is 'earning' | 'expense' | 'saving'.
+export function addOption(kind, payload) {
+  const body = typeof payload === "string" ? { name: payload } : payload;
+  return fetch(`${API_BASE}/${kind}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }).then(handle);
+}
+
+export function deleteOption(kind, id) {
+  return fetch(`${API_BASE}/${kind}/${id}`, { method: "DELETE" }).then(handle);
+}
+
+export function fetchAllOptions() {
+  return Promise.all(OPTION_KINDS.map(fetchOptions)).then((results) =>
+    Object.fromEntries(OPTION_KINDS.map((kind, i) => [kind, results[i]]))
+  );
+}
+
 export function createTransaction(data) {
   return fetch(`${API_BASE}/transactions`, {
     method: "POST",

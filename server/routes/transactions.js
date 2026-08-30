@@ -3,6 +3,12 @@ import { pool } from "../db.js";
 
 const router = Router();
 
+async function isKnownOption(table, value) {
+  if (!value) return true;
+  const { rows } = await pool.query(`SELECT 1 FROM ${table} WHERE name = $1`, [value]);
+  return rows.length > 0;
+}
+
 // GET /transactions?months=2026-08,2026-07&tags=Shopping,Food
 router.get("/", async (req, res) => {
   try {
@@ -27,8 +33,10 @@ router.get("/", async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const { rows } = await pool.query(
-      `SELECT id, type, amount, tag, date, note, created_at
-       FROM transactions
+      `SELECT t.id, t.type, tt.kind AS type_kind, t.amount, t.tag, t.payment_method,
+              t.payment_source, t.date, t.note, t.created_at
+       FROM transactions t
+       LEFT JOIN transaction_types tt ON tt.name = t.type
        ${where}
        ORDER BY date DESC, created_at DESC`,
       params
@@ -53,12 +61,29 @@ router.get("/tags", async (req, res) => {
   }
 });
 
+// GET /transactions/savings-overall - all-time total across every 'saving' kind transaction,
+// independent of any month/tag filter the UI currently has applied.
+router.get("/savings-overall", async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT COALESCE(SUM(t.amount), 0) AS total
+       FROM transactions t
+       JOIN transaction_types tt ON tt.name = t.type
+       WHERE tt.kind = 'saving'`
+    );
+    res.json({ total: Number(rows[0].total) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch overall savings" });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
-    const { type, amount, tag, date, note } = req.body;
+    const { type, amount, tag, payment_method, payment_source, date, note } = req.body;
 
-    if (!["earning", "expense"].includes(type)) {
-      return res.status(400).json({ error: "type must be 'earning' or 'expense'" });
+    if (!(await isKnownOption("transaction_types", type))) {
+      return res.status(400).json({ error: "type must be a known transaction type" });
     }
     if (!(Number(amount) > 0)) {
       return res.status(400).json({ error: "amount must be a positive number" });
@@ -66,15 +91,26 @@ router.post("/", async (req, res) => {
     if (!tag || !String(tag).trim()) {
       return res.status(400).json({ error: "tag is required" });
     }
+    if (!(await isKnownOption("payment_methods", payment_method))) {
+      return res.status(400).json({ error: "payment_method must be a known payment method" });
+    }
+    if (!(await isKnownOption("payment_sources", payment_source))) {
+      return res.status(400).json({ error: "payment_source must be a known payment source" });
+    }
     if (!date) {
       return res.status(400).json({ error: "date is required" });
     }
 
     const { rows } = await pool.query(
-      `INSERT INTO transactions (type, amount, tag, date, note)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, type, amount, tag, date, note, created_at`,
-      [type, amount, tag.trim(), date, note || null]
+      `WITH inserted AS (
+         INSERT INTO transactions (type, amount, tag, payment_method, payment_source, date, note)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id, type, amount, tag, payment_method, payment_source, date, note, created_at
+       )
+       SELECT inserted.*, tt.kind AS type_kind
+       FROM inserted
+       LEFT JOIN transaction_types tt ON tt.name = inserted.type`,
+      [type, amount, tag.trim(), payment_method || null, payment_source || null, date, note || null]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -86,10 +122,10 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { type, amount, tag, date, note } = req.body;
+    const { type, amount, tag, payment_method, payment_source, date, note } = req.body;
 
-    if (!["earning", "expense"].includes(type)) {
-      return res.status(400).json({ error: "type must be 'earning' or 'expense'" });
+    if (!(await isKnownOption("transaction_types", type))) {
+      return res.status(400).json({ error: "type must be a known transaction type" });
     }
     if (!(Number(amount) > 0)) {
       return res.status(400).json({ error: "amount must be a positive number" });
@@ -97,16 +133,27 @@ router.put("/:id", async (req, res) => {
     if (!tag || !String(tag).trim()) {
       return res.status(400).json({ error: "tag is required" });
     }
+    if (!(await isKnownOption("payment_methods", payment_method))) {
+      return res.status(400).json({ error: "payment_method must be a known payment method" });
+    }
+    if (!(await isKnownOption("payment_sources", payment_source))) {
+      return res.status(400).json({ error: "payment_source must be a known payment source" });
+    }
     if (!date) {
       return res.status(400).json({ error: "date is required" });
     }
 
     const { rows } = await pool.query(
-      `UPDATE transactions
-       SET type = $1, amount = $2, tag = $3, date = $4, note = $5
-       WHERE id = $6
-       RETURNING id, type, amount, tag, date, note, created_at`,
-      [type, amount, tag.trim(), date, note || null, id]
+      `WITH updated AS (
+         UPDATE transactions
+         SET type = $1, amount = $2, tag = $3, payment_method = $4, payment_source = $5, date = $6, note = $7
+         WHERE id = $8
+         RETURNING id, type, amount, tag, payment_method, payment_source, date, note, created_at
+       )
+       SELECT updated.*, tt.kind AS type_kind
+       FROM updated
+       LEFT JOIN transaction_types tt ON tt.name = updated.type`,
+      [type, amount, tag.trim(), payment_method || null, payment_source || null, date, note || null, id]
     );
 
     if (!rows.length) {

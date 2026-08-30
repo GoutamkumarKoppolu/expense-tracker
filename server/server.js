@@ -2,6 +2,11 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import transactionsRouter from "./routes/transactions.js";
+import {
+  transactionTypesRouter,
+  paymentMethodsRouter,
+  paymentSourcesRouter,
+} from "./routes/options.js";
 
 dotenv.config();
 
@@ -10,6 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/transactions", transactionsRouter);
+app.use("/transaction-types", transactionTypesRouter);
+app.use("/payment-methods", paymentMethodsRouter);
+app.use("/payment-sources", paymentSourcesRouter);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 

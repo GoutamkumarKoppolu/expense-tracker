@@ -1,19 +1,21 @@
 const currency = (n) => `₹${Number(n).toFixed(2)}`;
 
-export default function SummaryPanel({ transactions }) {
+export default function SummaryPanel({ transactions, overallSavings }) {
   const totalEarnings = transactions
-    .filter((t) => t.type === "earning")
+    .filter((t) => t.type_kind === "earning")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalExpenses = transactions
-    .filter((t) => t.type === "expense")
+    .filter((t) => t.type_kind === "expense")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const saved = totalEarnings - totalExpenses;
+  const totalSavings = transactions
+    .filter((t) => t.type_kind === "saving")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const byTag = {};
   transactions
-    .filter((t) => t.type === "expense")
+    .filter((t) => t.type_kind === "expense")
     .forEach((t) => {
       byTag[t.tag] = (byTag[t.tag] || 0) + Number(t.amount);
     });
@@ -32,10 +34,12 @@ export default function SummaryPanel({ transactions }) {
           <span className="stat-value negative">{currency(totalExpenses)}</span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">Saved</span>
-          <span className={`stat-value ${saved >= 0 ? "positive" : "negative"}`}>
-            {currency(saved)}
-          </span>
+          <span className="stat-label">Saved (this selection)</span>
+          <span className="stat-value savings">{currency(totalSavings)}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Overall Savings</span>
+          <span className="stat-value savings">{currency(overallSavings)}</span>
         </div>
       </div>
 

@@ -12,6 +12,8 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
           <th>Date</th>
           <th>Type</th>
           <th>Tag</th>
+          <th>Payment Method</th>
+          <th>Payment Source</th>
           <th>Note</th>
           <th className="amount-col">Amount</th>
           <th></th>
@@ -19,13 +21,15 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
       </thead>
       <tbody>
         {transactions.map((t) => (
-          <tr key={t.id} className={t.type === "earning" ? "row-earning" : "row-expense"}>
+          <tr key={t.id} className={`row-${t.type_kind || "expense"}`}>
             <td>{t.date.slice(0, 10)}</td>
-            <td>{t.type === "earning" ? "Earning" : "Expense"}</td>
+            <td>{t.type}</td>
             <td>{t.tag}</td>
+            <td>{t.payment_method || "—"}</td>
+            <td>{t.payment_source || "—"}</td>
             <td>{t.note || "—"}</td>
             <td className="amount-col">
-              {t.type === "earning" ? "+" : "-"}
+              {t.type_kind === "earning" ? "+" : "-"}
               {currency(t.amount)}
             </td>
             <td className="row-actions">

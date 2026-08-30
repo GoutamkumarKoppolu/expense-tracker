@@ -8,6 +8,8 @@
   --accent-bg: rgba(109, 59, 255, 0.08);
   --positive: #1a7f37;
   --negative: #c0362c;
+  --savings: #1c6fd6;
+  --savings-bg: rgba(28, 111, 214, 0.08);
 
   font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
   color-scheme: light dark;
@@ -28,6 +30,8 @@
     --accent-bg: rgba(179, 157, 255, 0.12);
     --positive: #4bc267;
     --negative: #ef6a5f;
+    --savings: #6ea8ff;
+    --savings-bg: rgba(110, 168, 255, 0.14);
   }
 }
 
