@@ -21,8 +21,8 @@ export function fetchTags() {
   return fetch(`${API_BASE}/transactions/tags`).then(handle);
 }
 
-export function fetchSavingsOverall() {
-  return fetch(`${API_BASE}/transactions/savings-overall`).then(handle);
+export function fetchOverview() {
+  return fetch(`${API_BASE}/transactions/overview`).then(handle);
 }
 
 const OPTION_KINDS = ["transaction-types", "payment-methods", "payment-sources"];

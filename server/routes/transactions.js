@@ -61,20 +61,30 @@ router.get("/tags", async (req, res) => {
   }
 });
 
-// GET /transactions/savings-overall - all-time total across every 'saving' kind transaction,
-// independent of any month/tag filter the UI currently has applied.
-router.get("/savings-overall", async (req, res) => {
+// GET /transactions/overview - all-time totals by kind, independent of any
+// month/tag filter the UI currently has applied. Current balance = what's
+// actually left in hand: earnings minus expenses minus money moved to savings.
+router.get("/overview", async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT COALESCE(SUM(t.amount), 0) AS total
+      `SELECT tt.kind AS kind, COALESCE(SUM(t.amount), 0) AS total
        FROM transactions t
        JOIN transaction_types tt ON tt.name = t.type
-       WHERE tt.kind = 'saving'`
+       GROUP BY tt.kind`
     );
-    res.json({ total: Number(rows[0].total) });
+    const totals = { earning: 0, expense: 0, saving: 0 };
+    rows.forEach((r) => {
+      if (r.kind in totals) totals[r.kind] = Number(r.total);
+    });
+    res.json({
+      totalEarnings: totals.earning,
+      totalExpenses: totals.expense,
+      totalSavings: totals.saving,
+      balance: totals.earning - totals.expense - totals.saving,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch overall savings" });
+    res.status(500).json({ error: "Failed to fetch overview" });
   }
 });
 

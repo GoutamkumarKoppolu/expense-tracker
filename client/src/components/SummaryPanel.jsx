@@ -1,6 +1,8 @@
+import SpendingChart from "./SpendingChart";
+
 const currency = (n) => `₹${Number(n).toFixed(2)}`;
 
-export default function SummaryPanel({ transactions, overallSavings }) {
+export default function SummaryPanel({ transactions, overview }) {
   const totalEarnings = transactions
     .filter((t) => t.type_kind === "earning")
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -39,14 +41,19 @@ export default function SummaryPanel({ transactions, overallSavings }) {
         </div>
         <div className="stat-card">
           <span className="stat-label">Overall Savings</span>
-          <span className="stat-value savings">{currency(overallSavings)}</span>
+          <span className="stat-value savings">{currency(overview.totalSavings)}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Current Balance</span>
+          <span className={`stat-value ${overview.balance >= 0 ? "positive" : "negative"}`}>
+            {currency(overview.balance)}
+          </span>
         </div>
       </div>
 
       <h3>Spending by tag</h3>
-      {tagRows.length === 0 ? (
-        <p className="empty-state">No expenses recorded for this selection.</p>
-      ) : (
+      <SpendingChart rows={tagRows} total={totalExpenses} />
+      {tagRows.length > 0 && (
         <table className="summary-table">
           <thead>
             <tr>

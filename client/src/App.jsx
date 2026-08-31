@@ -10,7 +10,7 @@ import {
   fetchTransactions,
   fetchTags,
   fetchAllOptions,
-  fetchSavingsOverall,
+  fetchOverview,
   addOption,
   deleteOption,
   createTransaction,
@@ -24,12 +24,13 @@ const currentMonth = () => {
 };
 
 const emptyOptions = { "transaction-types": [], "payment-methods": [], "payment-sources": [] };
+const emptyOverview = { totalEarnings: 0, totalExpenses: 0, totalSavings: 0, balance: 0 };
 
 export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [options, setOptions] = useState(emptyOptions);
-  const [overallSavings, setOverallSavings] = useState(0);
+  const [overview, setOverview] = useState(emptyOverview);
   const [selectedMonths, setSelectedMonths] = useState([currentMonth()]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -45,10 +46,8 @@ export default function App() {
     fetchAllOptions().then(setOptions).catch((e) => setError(e.message));
   }, []);
 
-  const loadOverallSavings = useCallback(() => {
-    fetchSavingsOverall()
-      .then((r) => setOverallSavings(r.total))
-      .catch((e) => setError(e.message));
+  const loadOverview = useCallback(() => {
+    fetchOverview().then(setOverview).catch((e) => setError(e.message));
   }, []);
 
   const loadTransactions = useCallback(() => {
@@ -62,8 +61,8 @@ export default function App() {
   useEffect(() => {
     loadTags();
     loadOptions();
-    loadOverallSavings();
-  }, [loadTags, loadOptions, loadOverallSavings]);
+    loadOverview();
+  }, [loadTags, loadOptions, loadOverview]);
 
   useEffect(() => {
     loadTransactions();
@@ -72,7 +71,7 @@ export default function App() {
   function refreshAfterMutation() {
     loadTransactions();
     loadTags();
-    loadOverallSavings();
+    loadOverview();
   }
 
   async function handleSubmit(data) {
@@ -163,7 +162,7 @@ export default function App() {
 
           <section className="card">
             <h2>Summary</h2>
-            {loading ? <p>Loading…</p> : <SummaryPanel transactions={transactions} overallSavings={overallSavings} />}
+            {loading ? <p>Loading…</p> : <SummaryPanel transactions={transactions} overview={overview} />}
           </section>
 
           <section className="card">

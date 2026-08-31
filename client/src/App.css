@@ -1,7 +1,7 @@
 .app {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 24px 16px 64px;
+  width: 100%;
+  margin: 0;
+  padding: 24px clamp(16px, 3vw, 48px) 64px;
 }
 
 header {
@@ -212,6 +212,50 @@ th {
   opacity: 0.7;
   font-size: 14px;
   padding: 8px 0;
+}
+
+.spend-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.spend-chart-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 160px) 1fr minmax(70px, auto);
+  align-items: center;
+  gap: 10px;
+}
+
+.spend-chart-label {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spend-chart-track {
+  background: var(--bg);
+  border-radius: 4px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.spend-chart-bar {
+  height: 100%;
+  min-width: 3px;
+  background: var(--negative);
+  border-radius: 0 4px 4px 0;
+  transition: width 0.2s ease;
+}
+
+.spend-chart-value {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-align: right;
 }
 
 .settings-header {
