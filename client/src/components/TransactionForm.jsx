@@ -39,10 +39,12 @@ export default function TransactionForm({
     }
   }, [editingTransaction]);
 
-  // Default to the first known transaction type once the list has loaded.
+  // Default to "expense" (the most common entry) once types have loaded,
+  // falling back to whatever's first if "expense" isn't among them.
   useEffect(() => {
     if (!editingTransaction && !form.type && transactionTypes.length) {
-      setForm((f) => ({ ...f, type: transactionTypes[0].name }));
+      const defaultType = transactionTypes.find((t) => t.name === "expense") || transactionTypes[0];
+      setForm((f) => ({ ...f, type: defaultType.name }));
     }
   }, [transactionTypes, editingTransaction, form.type]);
 
