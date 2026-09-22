@@ -71,3 +71,44 @@ export function updateTransaction(id, data) {
 export function deleteTransaction(id) {
   return fetch(`${API_BASE}/transactions/${id}`, { method: "DELETE" }).then(handle);
 }
+
+export function fetchCreditCards() {
+  return fetch(`${API_BASE}/credit-cards`).then(handle);
+}
+
+export function fetchCardUtilization() {
+  return fetch(`${API_BASE}/credit-cards/utilization`).then(handle);
+}
+
+export function createCreditCard(data) {
+  return fetch(`${API_BASE}/credit-cards`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(handle);
+}
+
+export function deleteCreditCard(id) {
+  return fetch(`${API_BASE}/credit-cards/${id}`, { method: "DELETE" }).then(handle);
+}
+
+export function fetchCardTransactions(cardId, { months = [] } = {}) {
+  const params = new URLSearchParams();
+  if (months.length) params.set("months", months.join(","));
+  const qs = params.toString();
+  return fetch(`${API_BASE}/credit-cards/${cardId}/transactions${qs ? `?${qs}` : ""}`).then(handle);
+}
+
+export function createCardTransaction(cardId, data) {
+  return fetch(`${API_BASE}/credit-cards/${cardId}/transactions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(handle);
+}
+
+export function deleteCardTransaction(cardId, txId) {
+  return fetch(`${API_BASE}/credit-cards/${cardId}/transactions/${txId}`, {
+    method: "DELETE",
+  }).then(handle);
+}

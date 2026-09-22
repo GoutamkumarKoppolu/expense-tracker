@@ -15,6 +15,11 @@ header {
   gap: 12px;
 }
 
+.app-nav {
+  display: flex;
+  gap: 8px;
+}
+
 .error-banner {
   background: var(--accent-bg);
   color: var(--negative);
@@ -332,4 +337,160 @@ th {
 .kind-saving {
   background: var(--savings-bg);
   color: var(--savings);
+}
+
+.cc-last4 {
+  font-weight: 400;
+  font-size: 13px;
+  opacity: 0.7;
+  color: var(--text);
+}
+
+.cc-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cc-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.cc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.cc-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.cc-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  overflow-x: auto;
+  padding-top: 8px;
+}
+
+.cc-chart-month {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cc-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 160px;
+}
+
+.cc-chart-bar {
+  width: 18px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.2s ease;
+}
+
+.cc-chart-month-label {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.cc-utilization-table {
+  font-size: 13px;
+}
+
+.cc-total-col {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.year-month-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 140px;
+  justify-content: space-between;
+}
+
+.dropdown-caret {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.dropdown-option:hover {
+  background: var(--accent-bg);
+}
+
+.dropdown-option input {
+  margin: 0;
+}
+
+.dropdown-clear {
+  margin-top: 4px;
+  align-self: flex-start;
 }

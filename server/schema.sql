@@ -48,3 +48,24 @@ ALTER TABLE transactions ADD COLUMN IF NOT EXISTS payment_source VARCHAR(50);
 
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions (date);
 CREATE INDEX IF NOT EXISTS idx_transactions_tag ON transactions (tag);
+
+-- Credit card tracking is intentionally separate from `transactions`: it's
+-- meant to log spend the statement misses, not to double-count as a regular
+-- expense.
+CREATE TABLE IF NOT EXISTS credit_cards (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  last4 VARCHAR(4),
+  created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS credit_card_transactions (
+  id SERIAL PRIMARY KEY,
+  card_id INTEGER NOT NULL REFERENCES credit_cards(id) ON DELETE CASCADE,
+  amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+  description VARCHAR(200) NOT NULL,
+  date DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cc_transactions_card_date ON credit_card_transactions (card_id, date);

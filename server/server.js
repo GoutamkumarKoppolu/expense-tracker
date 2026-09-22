@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import transactionsRouter from "./routes/transactions.js";
+import creditCardsRouter from "./routes/creditCards.js";
 import {
   transactionTypesRouter,
   paymentMethodsRouter,
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/transactions", transactionsRouter);
+app.use("/credit-cards", creditCardsRouter);
 app.use("/transaction-types", transactionTypesRouter);
 app.use("/payment-methods", paymentMethodsRouter);
 app.use("/payment-sources", paymentSourcesRouter);

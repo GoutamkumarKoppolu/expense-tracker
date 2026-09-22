@@ -11,6 +11,17 @@
   --savings: #1c6fd6;
   --savings-bg: rgba(28, 111, 214, 0.08);
 
+  /* Fixed categorical order for per-card chart colors — validated colorblind-safe
+     (adjacent ΔE >= 8 CVD, >= 15 normal-vision) against this page's surfaces. */
+  --cat-1: #2a78d6;
+  --cat-2: #eb6834;
+  --cat-3: #1baf7a;
+  --cat-4: #eda100;
+  --cat-5: #e87ba4;
+  --cat-6: #008300;
+  --cat-7: #4a3aa7;
+  --cat-8: #e34948;
+
   font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
   color-scheme: light dark;
   color: var(--text);
@@ -32,6 +43,15 @@
     --negative: #ef6a5f;
     --savings: #6ea8ff;
     --savings-bg: rgba(110, 168, 255, 0.14);
+
+    --cat-1: #3987e5;
+    --cat-2: #d95926;
+    --cat-3: #199e70;
+    --cat-4: #c98500;
+    --cat-5: #d55181;
+    --cat-6: #008300;
+    --cat-7: #9085e9;
+    --cat-8: #e66767;
   }
 }
 

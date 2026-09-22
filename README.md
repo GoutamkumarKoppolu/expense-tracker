@@ -1,15 +1,16 @@
 # Expense Tracker
 
-A full-stack expense tracker with a Node/Express + PostgreSQL API and a React (Vite) frontend. Track earnings, expenses, and savings, filter by month or tag, and see a spending breakdown at a glance.
+A full-stack expense tracker with a Node/Express + PostgreSQL API and a React (Vite) frontend. Track earnings, expenses, and savings, log credit card spending separately from your regular ledger, filter by year, month, or tag, and see spending breakdowns at a glance.
 
 ## Features
 
 - **Transactions** — add, edit, and delete entries with an amount, tag, date, optional note, payment method, and payment source.
 - **Custom types** — transactions are one of three kinds: `earning`, `expense`, or `saving`. New transaction types, payment methods, and payment sources can be added or removed from the "Manage options" page.
-- **Filtering** — filter the transaction list and summary by one or more months (last 12 months available) and by tag.
+- **Filtering** — filter the transaction list and summary with independent multi-select dropdowns for year and month (any combination of years × months), plus a tag filter.
 - **Summary panel** — total earnings, total expenses, savings for the current selection, all-time savings, and current balance (earnings − expenses − savings), computed across your whole history regardless of the active filter.
 - **Spending by tag** — a bar chart plus a table showing how much was spent per tag and its share of total expenses.
-- **REST API** with endpoints for transactions, tags, an all-time overview, and the option lists (`/transaction-types`, `/payment-methods`, `/payment-sources`).
+- **Credit card tracking** — add credit cards, log transactions against each one (kept fully separate from the main ledger so nothing is double-counted — useful for catching spend a statement misses), and a monthly utilization bar chart comparing spend across cards.
+- **REST API** with endpoints for transactions, tags, an all-time overview, credit cards and their transactions/utilization, and the option lists (`/transaction-types`, `/payment-methods`, `/payment-sources`).
 
 ## Prerequisites
 
@@ -34,7 +35,7 @@ createdb expense_tracker
 psql -d expense_tracker -f server/schema.sql
 ```
 
-`schema.sql` creates the required tables and seeds default transaction types (`expense`, `earning`, `saving`), payment methods (Cash, Card, UPI, Bank Transfer), and payment sources (PhonePe, Google Pay, Paytm). It's safe to re-run.
+`schema.sql` creates the required tables (including `credit_cards` and `credit_card_transactions`) and seeds default transaction types (`expense`, `earning`, `saving`), payment methods (Cash, Card, UPI, Bank Transfer), and payment sources (PhonePe, Google Pay, Paytm). It's safe to re-run.
 
 ### 2. Configure and start the server
 

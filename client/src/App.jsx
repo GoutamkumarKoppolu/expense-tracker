@@ -3,9 +3,10 @@ import "./App.css";
 import TransactionForm from "./components/TransactionForm";
 import TransactionList from "./components/TransactionList";
 import SummaryPanel from "./components/SummaryPanel";
-import MonthSelector from "./components/MonthSelector";
+import YearMonthSelector from "./components/YearMonthSelector";
 import TagFilter from "./components/TagFilter";
 import SettingsPage from "./components/SettingsPage";
+import CreditCardsPage from "./components/CreditCardsPage";
 import {
   fetchTransactions,
   fetchTags,
@@ -123,9 +124,29 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>Expense Tracker</h1>
-        <button type="button" className="secondary" onClick={() => setView(view === "main" ? "settings" : "main")}>
-          {view === "main" ? "Manage options" : "Back to tracker"}
-        </button>
+        <nav className="app-nav">
+          <button
+            type="button"
+            className={view === "main" ? "" : "secondary"}
+            onClick={() => setView("main")}
+          >
+            Tracker
+          </button>
+          <button
+            type="button"
+            className={view === "cards" ? "" : "secondary"}
+            onClick={() => setView("cards")}
+          >
+            Credit Cards
+          </button>
+          <button
+            type="button"
+            className={view === "settings" ? "" : "secondary"}
+            onClick={() => setView("settings")}
+          >
+            Manage options
+          </button>
+        </nav>
       </header>
 
       {error && <div className="error-banner">{error}</div>}
@@ -137,6 +158,8 @@ export default function App() {
           onDelete={handleDeleteOption}
           onBack={() => setView("main")}
         />
+      ) : view === "cards" ? (
+        <CreditCardsPage />
       ) : (
         <>
           <section className="card">
@@ -154,7 +177,7 @@ export default function App() {
 
           <section className="card">
             <h2>Months</h2>
-            <MonthSelector selectedMonths={selectedMonths} onChange={setSelectedMonths} />
+            <YearMonthSelector selectedMonths={selectedMonths} onChange={setSelectedMonths} />
 
             <h2>Filter by tag</h2>
             <TagFilter availableTags={availableTags} selectedTags={selectedTags} onChange={setSelectedTags} />
