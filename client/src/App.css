@@ -1,7 +1,12 @@
 .app {
   width: 100%;
   margin: 0;
-  padding: 24px clamp(16px, 3vw, 48px) 64px;
+  /* env(safe-area-inset-*) is 0 in normal browsers and on iOS/Android
+     below the edge-to-edge cutover, so this is a no-op there — it only
+     kicks in where content would otherwise draw under the status bar or
+     gesture nav bar (e.g. Android 15+ targetSdk 35 apps). */
+  padding: calc(24px + env(safe-area-inset-top)) clamp(16px, 3vw, 48px)
+    calc(64px + env(safe-area-inset-bottom));
 }
 
 header {
