@@ -1,0 +1,5 @@
+{
+  "appId": "com.goutam.expensetracker",
+  "appName": "Expense Tracker",
+  "webDir": "dist"
+}
