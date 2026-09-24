@@ -10,14 +10,7 @@ import {
   deleteCardTransaction,
   fetchCardUtilization,
 } from "../api";
-
-const currency = (n) => `₹${Number(n).toFixed(2)}`;
-const today = () => new Date().toISOString().slice(0, 10);
-
-const currentMonth = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
+import { currency, currentMonth, today } from "../utils/format";
 
 function AddCardForm({ onAdd }) {
   const [name, setName] = useState("");

@@ -5,6 +5,7 @@
 // creditCards.js for behavioral parity.
 import { db } from "./db";
 import { isKnownOption, requirePositiveAmount, requireNonEmpty, requireValidLast4 } from "./db/validators";
+import { TRANSACTION_KINDS, computeTotals, matchesFilters, normalizeDeductFlag } from "./domain/transactions";
 
 const nowIso = () => new Date().toISOString();
 
@@ -25,12 +26,15 @@ function sortByDateDesc(rows) {
   });
 }
 
-export async function fetchTransactions({ months = [], tags = [] } = {}) {
-  let rows = await db.transactions.toArray();
-  if (months.length) rows = rows.filter((t) => months.includes(t.date.slice(0, 7)));
-  if (tags.length) rows = rows.filter((t) => tags.includes(t.tag));
-  const map = await kindByTypeNameMap();
-  return sortByDateDesc(rows).map((t) => ({ ...t, type_kind: map[t.type] ?? null }));
+async function allTransactionsWithKind() {
+  const [rows, map] = await Promise.all([db.transactions.toArray(), kindByTypeNameMap()]);
+  return rows.map((t) => ({ ...t, type_kind: map[t.type] ?? null }));
+}
+
+// filters: see matchesFilters in domain/transactions.js
+export async function fetchTransactions(filters = {}) {
+  const rows = await allTransactionsWithKind();
+  return sortByDateDesc(rows.filter((t) => matchesFilters(t, filters)));
 }
 
 export async function fetchTags() {
@@ -39,18 +43,12 @@ export async function fetchTags() {
 }
 
 export async function fetchOverview() {
-  const [rows, types] = await Promise.all([db.transactions.toArray(), db.transaction_types.toArray()]);
-  const kindByName = Object.fromEntries(types.map((t) => [t.name, t.kind]));
-  const totals = { earning: 0, expense: 0, saving: 0 };
-  rows.forEach((t) => {
-    const kind = kindByName[t.type];
-    if (kind in totals) totals[kind] += Number(t.amount);
-  });
+  const totals = computeTotals(await allTransactionsWithKind());
   return {
-    totalEarnings: totals.earning,
-    totalExpenses: totals.expense,
-    totalSavings: totals.saving,
-    balance: totals.earning - totals.expense - totals.saving,
+    totalEarnings: totals.earnings,
+    totalExpenses: totals.expenses,
+    totalSavings: totals.savings,
+    balance: totals.balance,
   };
 }
 
@@ -65,7 +63,6 @@ const NOT_FOUND_MESSAGE = {
   "payment-methods": "payment method not found",
   "payment-sources": "payment source not found",
 };
-const TRANSACTION_KINDS = ["earning", "expense", "saving"];
 
 export function fetchOptions(kind) {
   return db[TABLE_BY_KIND[kind]].orderBy("name").toArray();
@@ -130,11 +127,10 @@ async function validateTransactionFields({ type, amount, tag, payment_method, pa
   return trimmedTag;
 }
 
-export async function createTransaction(data) {
-  const { type, amount, payment_method, payment_source, date, note } = data;
-  const trimmedTag = await validateTransactionFields(data);
-
-  const id = await db.transactions.add({
+async function transactionRecord(data, trimmedTag) {
+  const { type, amount, payment_method, payment_source, date, note, deduct_from_balance } = data;
+  const kind = (await kindByTypeNameMap())[type];
+  return {
     type,
     amount: Number(amount),
     tag: trimmedTag,
@@ -142,28 +138,25 @@ export async function createTransaction(data) {
     payment_source: payment_source || null,
     date,
     note: note || null,
-    created_at: nowIso(),
-  });
+    deduct_from_balance: normalizeDeductFlag(kind, deduct_from_balance),
+  };
+}
+
+export async function createTransaction(data) {
+  const trimmedTag = await validateTransactionFields(data);
+  const record = await transactionRecord(data, trimmedTag);
+  const id = await db.transactions.add({ ...record, created_at: nowIso() });
   return attachTypeKind(await db.transactions.get(id));
 }
 
 export async function updateTransaction(id, data) {
-  const { type, amount, payment_method, payment_source, date, note } = data;
   const trimmedTag = await validateTransactionFields(data);
 
   const txId = Number(id);
   const existing = await db.transactions.get(txId);
   if (!existing) throw new Error("Transaction not found");
 
-  await db.transactions.update(txId, {
-    type,
-    amount: Number(amount),
-    tag: trimmedTag,
-    payment_method: payment_method || null,
-    payment_source: payment_source || null,
-    date,
-    note: note || null,
-  });
+  await db.transactions.update(txId, await transactionRecord(data, trimmedTag));
   return attachTypeKind(await db.transactions.get(txId));
 }
 

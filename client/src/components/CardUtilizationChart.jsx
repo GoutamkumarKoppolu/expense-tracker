@@ -1,4 +1,4 @@
-const currency = (n) => `₹${Number(n).toFixed(2)}`;
+import { currency } from "../utils/format";
 
 // Fixed categorical order — colorblind-validated (adjacent ΔE ≥ 8 CVD, ≥ 15
 // normal-vision on this app's light/dark surfaces). Never reassign a slot by

@@ -1,4 +1,4 @@
-const currency = (n) => `₹${Number(n).toFixed(2)}`;
+import { currency } from "../utils/format";
 
 export default function SpendingChart({ rows, total }) {
   if (!rows.length) {

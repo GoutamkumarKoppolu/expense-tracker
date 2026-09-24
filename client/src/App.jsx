@@ -5,6 +5,7 @@ import TransactionList from "./components/TransactionList";
 import SummaryPanel from "./components/SummaryPanel";
 import YearMonthSelector from "./components/YearMonthSelector";
 import TagFilter from "./components/TagFilter";
+import KindFilter from "./components/KindFilter";
 import SettingsPage from "./components/SettingsPage";
 import CreditCardsPage from "./components/CreditCardsPage";
 import {
@@ -18,11 +19,8 @@ import {
   updateTransaction,
   deleteTransaction,
 } from "./api";
-
-const currentMonth = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
+import { currentMonth } from "./utils/format";
+import { DEDUCTION_FILTERS } from "./domain/transactions";
 
 const emptyOptions = { "transaction-types": [], "payment-methods": [], "payment-sources": [] };
 const emptyOverview = { totalEarnings: 0, totalExpenses: 0, totalSavings: 0, balance: 0 };
@@ -34,6 +32,7 @@ export default function App() {
   const [overview, setOverview] = useState(emptyOverview);
   const [selectedMonths, setSelectedMonths] = useState([currentMonth()]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [kindFilter, setKindFilter] = useState({ kind: "", deduction: DEDUCTION_FILTERS.ALL });
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [view, setView] = useState("main");
   const [error, setError] = useState("");
@@ -53,11 +52,11 @@ export default function App() {
 
   const loadTransactions = useCallback(() => {
     setLoading(true);
-    fetchTransactions({ months: selectedMonths, tags: selectedTags })
+    fetchTransactions({ months: selectedMonths, tags: selectedTags, ...kindFilter })
       .then(setTransactions)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [selectedMonths, selectedTags]);
+  }, [selectedMonths, selectedTags, kindFilter]);
 
   useEffect(() => {
     loadTags();
@@ -181,6 +180,9 @@ export default function App() {
 
             <h2>Filter by tag</h2>
             <TagFilter availableTags={availableTags} selectedTags={selectedTags} onChange={setSelectedTags} />
+
+            <h2>Filter by type</h2>
+            <KindFilter kind={kindFilter.kind} deduction={kindFilter.deduction} onChange={setKindFilter} />
           </section>
 
           <section className="card">

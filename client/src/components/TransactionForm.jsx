@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { deductsFromBalance } from "../domain/transactions";
+import { today } from "../utils/format";
 
-const today = () => new Date().toISOString().slice(0, 10);
-
-const emptyForm = {
+const emptyForm = () => ({
   type: "",
   amount: "",
   tag: "",
@@ -10,7 +10,8 @@ const emptyForm = {
   payment_source: "",
   date: today(),
   note: "",
-};
+  deduct_from_balance: true,
+});
 
 export default function TransactionForm({
   existingTags,
@@ -33,9 +34,10 @@ export default function TransactionForm({
         payment_source: editingTransaction.payment_source || "",
         date: editingTransaction.date.slice(0, 10),
         note: editingTransaction.note || "",
+        deduct_from_balance: deductsFromBalance(editingTransaction),
       });
     } else {
-      setForm(emptyForm);
+      setForm(emptyForm());
     }
   }, [editingTransaction]);
 
@@ -48,15 +50,17 @@ export default function TransactionForm({
     }
   }, [transactionTypes, editingTransaction, form.type]);
 
+  const isSavingType = transactionTypes.find((t) => t.name === form.type)?.kind === "saving";
+
   function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     onSubmit({ ...form, amount: Number(form.amount) });
-    if (!editingTransaction) setForm(emptyForm);
+    if (!editingTransaction) setForm(emptyForm());
   }
 
   return (
@@ -75,6 +79,18 @@ export default function TransactionForm({
             ))}
           </select>
         </label>
+
+        {isSavingType && (
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              name="deduct_from_balance"
+              checked={form.deduct_from_balance}
+              onChange={handleChange}
+            />
+            Deduct from current balance
+          </label>
+        )}
 
         <label>
           Amount

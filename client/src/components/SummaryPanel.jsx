@@ -1,19 +1,13 @@
 import SpendingChart from "./SpendingChart";
-
-const currency = (n) => `₹${Number(n).toFixed(2)}`;
+import { computeTotals } from "../domain/transactions";
+import { currency } from "../utils/format";
 
 export default function SummaryPanel({ transactions, overview }) {
-  const totalEarnings = transactions
-    .filter((t) => t.type_kind === "earning")
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-
-  const totalExpenses = transactions
-    .filter((t) => t.type_kind === "expense")
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-
-  const totalSavings = transactions
-    .filter((t) => t.type_kind === "saving")
-    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const {
+    earnings: totalEarnings,
+    expenses: totalExpenses,
+    savings: totalSavings,
+  } = computeTotals(transactions);
 
   const byTag = {};
   transactions

@@ -1,4 +1,5 @@
-const currency = (n) => `₹${Number(n).toFixed(2)}`;
+import { deductsFromBalance, isSaving } from "../domain/transactions";
+import { currency } from "../utils/format";
 
 export default function TransactionList({ transactions, onEdit, onDelete }) {
   if (!transactions.length) {
@@ -23,7 +24,14 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
         {transactions.map((t) => (
           <tr key={t.id} className={`row-${t.type_kind || "expense"}`}>
             <td>{t.date.slice(0, 10)}</td>
-            <td>{t.type}</td>
+            <td>
+              {t.type}
+              {isSaving(t) && (
+                <span className={`deduct-badge ${deductsFromBalance(t) ? "" : "deduct-badge-off"}`}>
+                  {deductsFromBalance(t) ? "from balance" : "not from balance"}
+                </span>
+              )}
+            </td>
             <td>{t.tag}</td>
             <td>{t.payment_method || "—"}</td>
             <td>{t.payment_source || "—"}</td>
