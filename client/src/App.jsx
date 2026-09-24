@@ -3,6 +3,7 @@ import { ChartPie, House, LayoutGrid, PiggyBank } from "lucide-react";
 import "./App.css";
 import BottomNav from "./app/BottomNav";
 import { useHashRoute } from "./app/useHashRoute";
+import { useSystemBars } from "./app/useSystemBars";
 import { LedgerProvider, TransactionSheet } from "./features/ledger";
 import HomePage from "./features/home/HomePage";
 import ReportPage from "./features/report/ReportPage";
@@ -10,16 +11,20 @@ import { SavingsPage } from "./features/savings";
 import CreditCardsPage from "./features/cards/CreditCardsPage";
 import SettingsPage from "./features/settings/SettingsPage";
 import MorePage from "./features/settings/MorePage";
+import AppearancePage from "./features/appearance/AppearancePage";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
-// shows the + (add transaction) button. Add a page here, nowhere else.
+// shows the + (add transaction) button; `hero` means the page starts with
+// the colored balance header (status bar is tinted to match). Add a page
+// here, nowhere else.
 const ROUTES = {
-  home: { page: HomePage, tab: "home", add: true },
+  home: { page: HomePage, tab: "home", add: true, hero: true },
   report: { page: ReportPage, tab: "report", add: true },
   savings: { page: SavingsPage, tab: "savings", add: true },
   more: { page: MorePage, tab: "more" },
   cards: { page: CreditCardsPage, tab: "more" },
   settings: { page: SettingsPage, tab: "more" },
+  appearance: { page: AppearancePage, tab: "more" },
 };
 
 const TABS = [
@@ -33,7 +38,8 @@ export default function App() {
   const [route, navigate] = useHashRoute(ROUTES, "home");
   // null = closed, { transaction: null } = add, { transaction } = edit
   const [sheet, setSheet] = useState(null);
-  const { page: Page, tab, add } = ROUTES[route];
+  const { page: Page, tab, add, hero = false } = ROUTES[route];
+  useSystemBars(hero);
 
   return (
     <LedgerProvider>

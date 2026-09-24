@@ -8,12 +8,8 @@
   --text-muted: #85839a;
   --border: #ebe9f3;
 
-  --accent: #7c5cf5;
-  --accent-strong: #6a45f0;
-  --accent-soft: #efeaff;
-  --on-accent: #ffffff;
-  --hero-from: #b19cff;
-  --hero-to: #7552f2;
+  /* Accent tokens (--accent*, --on-accent, --hero-*) come from
+     theme/palettes.css. */
   --on-hero: #ffffff;
 
   --positive: #15803d;
@@ -37,7 +33,7 @@
   --cat-8: #e34948;
 
   --shadow: 0 1px 2px rgba(24, 16, 56, 0.04), 0 8px 24px rgba(24, 16, 56, 0.06);
-  --shadow-strong: 0 10px 30px rgba(92, 60, 220, 0.35);
+  --shadow-strong: 0 10px 30px color-mix(in srgb, var(--hero-to) 40%, transparent);
   --radius-lg: 26px;
   --radius: 20px;
   --radius-sm: 14px;
@@ -45,7 +41,7 @@
   --gutter: 16px;
 
   font: 15px/1.45 system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
@@ -53,43 +49,36 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e0d13;
-    --surface: #18171f;
-    --surface-2: #211f2a;
-    --text: #f2f1f7;
-    --text-muted: #9c99ad;
-    --border: #2b2936;
+/* Dark (and Black) backgrounds. theme/themeStore.js sets data-theme on
+   <html>, resolving "System" from prefers-color-scheme. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e0d13;
+  --surface: #18171f;
+  --surface-2: #211f2a;
+  --text: #f2f1f7;
+  --text-muted: #9c99ad;
+  --border: #2b2936;
 
-    --accent: #a58bff;
-    --accent-strong: #b8a3ff;
-    --accent-soft: rgba(165, 139, 255, 0.16);
-    --on-accent: #16102e;
-    --hero-from: #6344d8;
-    --hero-to: #2c1a78;
+  --positive: #4ade80;
+  --positive-soft: rgba(74, 222, 128, 0.14);
+  --negative: #fb7185;
+  --negative-soft: rgba(251, 113, 133, 0.14);
+  --savings: #60a5fa;
+  --savings-soft: rgba(96, 165, 250, 0.15);
+  --warning: #fb923c;
+  --warning-soft: rgba(251, 146, 60, 0.15);
 
-    --positive: #4ade80;
-    --positive-soft: rgba(74, 222, 128, 0.14);
-    --negative: #fb7185;
-    --negative-soft: rgba(251, 113, 133, 0.14);
-    --savings: #60a5fa;
-    --savings-soft: rgba(96, 165, 250, 0.15);
-    --warning: #fb923c;
-    --warning-soft: rgba(251, 146, 60, 0.15);
+  --cat-1: #3987e5;
+  --cat-2: #d95926;
+  --cat-3: #199e70;
+  --cat-4: #c98500;
+  --cat-5: #d55181;
+  --cat-6: #008300;
+  --cat-7: #9085e9;
+  --cat-8: #e66767;
 
-    --cat-1: #3987e5;
-    --cat-2: #d95926;
-    --cat-3: #199e70;
-    --cat-4: #c98500;
-    --cat-5: #d55181;
-    --cat-6: #008300;
-    --cat-7: #9085e9;
-    --cat-8: #e66767;
-
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-    --shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.5);
-  }
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 * {

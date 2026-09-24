@@ -27,6 +27,7 @@ No `.env`, database, or server is needed. To reset local data, delete the `expen
 - CI: GitHub → Actions → "Build Android APK" → Run workflow (manual `workflow_dispatch`, [.github/workflows/android-build.yml](.github/workflows/android-build.yml)). Download the `app-debug-apk` artifact. It uses Node 20 and JDK 21, and the build is an unsigned debug build.
 - Local (needs Android Studio): `cd client && npm run cap:sync && npx cap open android`.
 - `client/android/` is Capacitor-generated. Commit it as-is and avoid hand-editing it unless a native change is really required.
+- **Status bar / navigation bar (Android 15+ edge-to-edge):** `capacitor.config.json` sets `android.adjustMarginsForEdgeToEdge: "auto"`, so Android insets the WebView below the status bar and above the nav bar natively (don't rely on `env(safe-area-inset-*)`, which older Android WebViews report as 0). The strips behind the bars are coloured by the local `SystemBarsPlugin.java` (registered in `MainActivity`), driven from `app/useSystemBars.js`: hero colour on pages with `hero: true` in `ROUTES`, page background elsewhere, bottom nav colour at the bottom, with icons light/dark to stay readable. Keep the CSS `env(safe-area-inset-*)` padding too, for iOS and browsers.
 
 **Legacy server (optional, not used by the app):** see README. `cd server && cp .env.example .env && npm install && npm start` against a Postgres DB created from `server/schema.sql`.
 
@@ -55,12 +56,18 @@ client/src/
     savings/               Savings page: pots, withdrawals, history (api.js, domain.js, index.js registers its guard)
     cards/                 Credit cards page + utilization chart (own api.js; separate from the ledger)
     settings/              Manage options page + More page
+    appearance/            Appearance page: background + accent pickers with live preview
+  theme/
+    palettes.css           Accent palettes (light + dark variants) and the Black background
+    palettes.js            BACKGROUNDS / ACCENTS option lists (ids match palettes.css)
+    themeStore.js          Saves the choice in localStorage; sets data-theme / data-accent / data-bg on <html>
+    useTheme.js            React hook over the store
   db/
     schema.js              Dexie store definitions (STORES = v1, STORES_V2 = v2 additions)
     index.js               Dexie instance, versioning, populate -> seed, storage.persist()
     seed.js                Default transaction types / payment methods / payment sources
     validators.js          Pure validation helpers (throw Error with user-facing messages)
-  index.css                Design tokens (colors, radii, shadows) for light + dark mode, base element styles
+  index.css                Base design tokens (neutrals, semantic colors, radii, shadows) for light + dark, base element styles
   App.css                  All component/page styles, grouped by section
 ```
 
@@ -101,7 +108,8 @@ Conventions in the data layer:
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
-| Light/dark theme (automatic), safe-area insets for the Android status/nav bars | `index.css`, `App.css` |
+| Themes: background (System / Light / Dark / Black AMOLED) × accent (Purple, Blue, Green, Teal, Orange, Pink), saved per device, applied instantly | `theme/`, `features/appearance/`, More → Appearance |
+| Safe-area insets for the Android status/nav bars | `App.css` |
 | Offline storage and Android packaging | `db/`, `capacitor.config.json`, `client/android/` |
 
 ## UI conventions (One UI, one-handed)
@@ -110,7 +118,9 @@ Conventions in the data layer:
 - **Forms and pickers open in a `BottomSheet`**, never inline at the top of a page. Submit buttons live in the sheet footer (`<button form={FORM_ID}>`).
 - **Tap targets ≥ 44px**, and choices are chips or segmented controls rather than small dropdowns where the list is short.
 - **Cards and rows, not wide tables.** Only the utilization table remains, inside `.table-scroll`. Test at 360, 390 and 412px widths: there must be no horizontal page scroll.
-- **Colors only from tokens** in `index.css`, with both light and dark values. Charts use `--cat-1..8` in fixed order.
+- **Colors only from tokens**, never hard-coded. Neutrals/semantic colors live in `index.css` (light on `:root`, dark on `:root[data-theme="dark"]`). Anything brand-coloured uses the accent tokens (`--accent`, `--accent-soft`, `--on-accent`, `--hero-from/-to`) from `theme/palettes.css`, so it follows the user's chosen accent. Charts use `--cat-1..8` in fixed order.
+- **Theme is per device display state** (localStorage via `theme/themeStore.js`), not ledger data, so it doesn't go in IndexedDB. Dark mode is driven by `data-theme` set in JS, not by a `prefers-color-scheme` media query.
+- **Adding a palette:** add a light block and a dark block to `theme/palettes.css`, and an entry to `ACCENTS` in `theme/palettes.js`. Keep `--on-accent` on `--accent` and `--accent` on `--accent-soft` at ≥ 4.5:1 contrast.
 - New pages: add to `ROUTES` in `App.jsx` (plus `TABS` if it needs a bottom tab; prefer adding it to the More page).
 
 ## How extensible the code is today

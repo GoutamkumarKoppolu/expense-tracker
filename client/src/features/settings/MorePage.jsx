@@ -1,8 +1,13 @@
-import { CreditCard, Settings, ShieldCheck } from "lucide-react";
+import { CreditCard, Palette, Settings, ShieldCheck } from "lucide-react";
+import { useTheme } from "../../theme/useTheme";
+import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
 import ListRow from "../../components/ui/ListRow";
 
 export default function MorePage({ navigate }) {
+  const { theme } = useTheme();
+  const label = (list, id) => list.find((x) => x.id === id).label;
+
   return (
     <>
       <PageHeader title="More" />
@@ -20,6 +25,13 @@ export default function MorePage({ navigate }) {
             title="Manage options"
             subtitle="Transaction types, payment methods and sources"
             onClick={() => navigate("settings")}
+          />
+          <ListRow
+            icon={Palette}
+            tone="savings"
+            title="Appearance"
+            subtitle={`${label(BACKGROUNDS, theme.background)} background · ${label(ACCENTS, theme.accent)}`}
+            onClick={() => navigate("appearance")}
           />
         </div>
         <div className="card card-list">

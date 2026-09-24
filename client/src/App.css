@@ -1397,3 +1397,174 @@ button.list-row:active {
 .option-add select.input {
   width: auto;
 }
+
+/* ---------- Appearance ---------- */
+
+.theme-preview {
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow), 0 0 0 1px var(--border);
+}
+
+.theme-preview-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 22px 16px 34px;
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
+    linear-gradient(165deg, var(--hero-from), var(--hero-to));
+  color: var(--on-hero);
+}
+
+.theme-preview-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.theme-preview-amount {
+  font-size: 28px;
+  font-weight: 750;
+}
+
+.theme-preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: -18px;
+  padding: 14px;
+  border-radius: 20px 20px 0 0;
+  background: var(--bg);
+}
+
+.theme-preview-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.theme-preview-row .icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.theme-preview-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-preview-lines span {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text);
+  opacity: 0.8;
+}
+
+.theme-preview-lines span + span {
+  width: 60%;
+  background: var(--text-muted);
+  opacity: 0.45;
+}
+
+.theme-preview-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.theme-preview-actions .chip {
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-preview-btn {
+  min-height: 40px;
+  padding: 0 20px;
+}
+
+.option-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.option-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.option-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.option-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 6px 12px;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.option-tile.is-active {
+  border-color: var(--accent);
+}
+
+/* Accent tiles carry their own data-accent, so the border shows that
+   palette; use the page accent instead for a consistent selection ring. */
+.option-grid-3 .option-tile.is-active {
+  border-color: var(--text);
+}
+
+.bg-swatch {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35);
+}
+
+.bg-swatch-system {
+  background: linear-gradient(135deg, #ffffff 50%, #18171f 50%);
+  color: #7a7a86;
+}
+
+.bg-swatch-light {
+  background: #ffffff;
+  color: #c2410c;
+}
+
+.bg-swatch-dark {
+  background: #18171f;
+  color: #c7c5d6;
+}
+
+.bg-swatch-black {
+  background: #000000;
+  color: #3a3a40;
+}
+
+.accent-swatch {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--hero-from), var(--hero-to));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--hero-to) 35%, transparent);
+  color: #fff;
+}

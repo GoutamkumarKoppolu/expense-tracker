@@ -1,0 +1,144 @@
+/* Accent palettes and the Black background. themeStore.js sets
+   data-accent / data-theme / data-bg on <html>. Selectors also match any
+   element with data-accent, so a swatch can preview a palette locally.
+
+   Each palette defines, for light and dark:
+     --accent        buttons, active chips, highlights (≥ 4.5:1 with --on-accent)
+     --accent-strong hover/pressed shade
+     --accent-soft   tinted backgrounds behind --accent text
+     --on-accent     text/icons on --accent
+     --hero-from/-to balance header + "+" button gradient (white text on top)
+   To add a palette: copy a pair of blocks below and add it to ACCENTS in
+   palettes.js. */
+
+/* ---------- Purple (default) ---------- */
+:root:not([data-accent]),
+[data-accent="purple"] {
+  --accent: #6841e8;
+  --accent-strong: #5a32d9;
+  --accent-soft: #efeaff;
+  --on-accent: #ffffff;
+  --hero-from: #a58bff;
+  --hero-to: #6d48ef;
+}
+
+:root[data-theme="dark"]:not([data-accent]),
+:root[data-theme="dark"][data-accent="purple"],
+:root[data-theme="dark"] [data-accent="purple"] {
+  --accent: #a58bff;
+  --accent-strong: #b8a3ff;
+  --accent-soft: rgba(165, 139, 255, 0.16);
+  --on-accent: #16102e;
+  --hero-from: #6344d8;
+  --hero-to: #2c1a78;
+}
+
+/* ---------- Blue ---------- */
+[data-accent="blue"] {
+  --accent: #1e55d6;
+  --accent-strong: #1a47b8;
+  --accent-soft: #e6eefe;
+  --on-accent: #ffffff;
+  --hero-from: #5b93f7;
+  --hero-to: #1d4ed8;
+}
+
+:root[data-theme="dark"][data-accent="blue"],
+:root[data-theme="dark"] [data-accent="blue"] {
+  --accent: #7cabff;
+  --accent-strong: #9cc0ff;
+  --accent-soft: rgba(124, 171, 255, 0.16);
+  --on-accent: #0a1a3a;
+  --hero-from: #2f5fd0;
+  --hero-to: #0f2463;
+}
+
+/* ---------- Green ---------- */
+[data-accent="green"] {
+  --accent: #137334;
+  --accent-strong: #11602c;
+  --accent-soft: #e3f5e9;
+  --on-accent: #ffffff;
+  --hero-from: #34b369;
+  --hero-to: #0f6b33;
+}
+
+:root[data-theme="dark"][data-accent="green"],
+:root[data-theme="dark"] [data-accent="green"] {
+  --accent: #4ade80;
+  --accent-strong: #86efac;
+  --accent-soft: rgba(74, 222, 128, 0.15);
+  --on-accent: #052e16;
+  --hero-from: #15803d;
+  --hero-to: #04301a;
+}
+
+/* ---------- Teal ---------- */
+[data-accent="teal"] {
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --accent-soft: #e0f5f3;
+  --on-accent: #ffffff;
+  --hero-from: #22a89c;
+  --hero-to: #0b5f58;
+}
+
+:root[data-theme="dark"][data-accent="teal"],
+:root[data-theme="dark"] [data-accent="teal"] {
+  --accent: #2dd4bf;
+  --accent-strong: #5eead4;
+  --accent-soft: rgba(45, 212, 191, 0.15);
+  --on-accent: #042f2e;
+  --hero-from: #0f766e;
+  --hero-to: #032e2b;
+}
+
+/* ---------- Orange ---------- */
+[data-accent="orange"] {
+  --accent: #c2410c;
+  --accent-strong: #9a3412;
+  --accent-soft: #fdeee4;
+  --on-accent: #ffffff;
+  --hero-from: #f7853b;
+  --hero-to: #c2410c;
+}
+
+:root[data-theme="dark"][data-accent="orange"],
+:root[data-theme="dark"] [data-accent="orange"] {
+  --accent: #fb923c;
+  --accent-strong: #fdba74;
+  --accent-soft: rgba(251, 146, 60, 0.15);
+  --on-accent: #431407;
+  --hero-from: #c2410c;
+  --hero-to: #4a1705;
+}
+
+/* ---------- Pink ---------- */
+[data-accent="pink"] {
+  --accent: #c0266d;
+  --accent-strong: #9d174d;
+  --accent-soft: #fde7f1;
+  --on-accent: #ffffff;
+  --hero-from: #ec6aa8;
+  --hero-to: #b0195e;
+}
+
+:root[data-theme="dark"][data-accent="pink"],
+:root[data-theme="dark"] [data-accent="pink"] {
+  --accent: #f472b6;
+  --accent-strong: #f9a8d4;
+  --accent-soft: rgba(244, 114, 182, 0.15);
+  --on-accent: #500724;
+  --hero-from: #be185d;
+  --hero-to: #4c0724;
+}
+
+/* ---------- Black background (AMOLED) ---------- */
+/* Applied on top of the dark theme: pure black page, near-black surfaces. */
+:root[data-bg="black"] {
+  --bg: #000000;
+  --surface: #111113;
+  --surface-2: #1a1a1d;
+  --border: #26262b;
+  --shadow: 0 0 0 1px #1c1c20;
+}
