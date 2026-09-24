@@ -10,3 +10,9 @@ export const STORES = {
   credit_cards: "++id, name, last4, created_at",
   credit_card_transactions: "++id, card_id, amount, description, date, created_at",
 };
+
+// Version 2: adds money taken out of savings (see features/savings). Dexie
+// keeps every table from earlier versions, so only new/changed stores go here.
+export const STORES_V2 = {
+  savings_withdrawals: "++id, tag, date, created_at",
+};

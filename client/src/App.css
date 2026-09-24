@@ -529,3 +529,27 @@ th {
   margin-top: 4px;
   align-self: flex-start;
 }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pot-row {
+  cursor: pointer;
+}
+
+.pot-row:hover,
+.pot-row-active {
+  background: var(--savings-bg);
+}
+
+.pot-table .positive {
+  color: var(--positive);
+}
+
+.pot-table .negative {
+  color: var(--negative);
+}

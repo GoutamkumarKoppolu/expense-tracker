@@ -42,12 +42,16 @@ export async function fetchTags() {
   return [...new Set(rows.map((t) => t.tag))].sort();
 }
 
+// totalSavings is net of money used from savings (features/savings). Using
+// savings never changes the balance, so withdrawals only affect that figure.
 export async function fetchOverview() {
-  const totals = computeTotals(await allTransactionsWithKind());
+  const [rows, withdrawals] = await Promise.all([allTransactionsWithKind(), db.savings_withdrawals.toArray()]);
+  const totals = computeTotals(rows);
+  const withdrawn = withdrawals.reduce((sum, w) => sum + Number(w.amount), 0);
   return {
     totalEarnings: totals.earnings,
     totalExpenses: totals.expenses,
-    totalSavings: totals.savings,
+    totalSavings: totals.savings - withdrawn,
     balance: totals.balance,
   };
 }
@@ -142,6 +146,20 @@ async function transactionRecord(data, trimmedTag) {
   };
 }
 
+// Features can veto edits/deletes that would break their own data (e.g. the
+// savings feature refuses changes that leave a pot below zero). A guard gets
+// (before, after) rows with `type_kind`; `after` is null for a delete. It
+// throws an Error with a user-facing message to block the change.
+const transactionGuards = [];
+
+export function registerTransactionGuard(guard) {
+  transactionGuards.push(guard);
+}
+
+async function runTransactionGuards(before, after) {
+  for (const guard of transactionGuards) await guard(before, after);
+}
+
 export async function createTransaction(data) {
   const trimmedTag = await validateTransactionFields(data);
   const record = await transactionRecord(data, trimmedTag);
@@ -156,7 +174,9 @@ export async function updateTransaction(id, data) {
   const existing = await db.transactions.get(txId);
   if (!existing) throw new Error("Transaction not found");
 
-  await db.transactions.update(txId, await transactionRecord(data, trimmedTag));
+  const record = await transactionRecord(data, trimmedTag);
+  await runTransactionGuards(await attachTypeKind(existing), await attachTypeKind({ ...existing, ...record }));
+  await db.transactions.update(txId, record);
   return attachTypeKind(await db.transactions.get(txId));
 }
 
@@ -164,6 +184,7 @@ export async function deleteTransaction(id) {
   const txId = Number(id);
   const existing = await db.transactions.get(txId);
   if (!existing) throw new Error("Transaction not found");
+  await runTransactionGuards(await attachTypeKind(existing), null);
   await db.transactions.delete(txId);
   return null;
 }

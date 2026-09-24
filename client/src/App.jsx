@@ -8,6 +8,7 @@ import TagFilter from "./components/TagFilter";
 import KindFilter from "./components/KindFilter";
 import SettingsPage from "./components/SettingsPage";
 import CreditCardsPage from "./components/CreditCardsPage";
+import { SavingsPage } from "./features/savings";
 import {
   fetchTransactions,
   fetchTags,
@@ -21,6 +22,14 @@ import {
 } from "./api";
 import { currentMonth } from "./utils/format";
 import { DEDUCTION_FILTERS } from "./domain/transactions";
+
+// Top-level pages, in nav order. Add a new page here rather than branching in JSX.
+const VIEWS = [
+  { id: "main", label: "Tracker" },
+  { id: "savings", label: "Savings" },
+  { id: "cards", label: "Credit Cards" },
+  { id: "settings", label: "Manage options" },
+];
 
 const emptyOptions = { "transaction-types": [], "payment-methods": [], "payment-sources": [] };
 const emptyOverview = { totalEarnings: 0, totalExpenses: 0, totalSavings: 0, balance: 0 };
@@ -74,6 +83,13 @@ export default function App() {
     loadOverview();
   }
 
+  // Other pages (e.g. Savings) can change ledger-derived figures, so reload
+  // them whenever the Tracker is opened again.
+  function openView(id) {
+    if (id === "main" && view !== "main") refreshAfterMutation();
+    setView(id);
+  }
+
   async function handleSubmit(data) {
     try {
       setError("");
@@ -119,47 +135,40 @@ export default function App() {
     }
   }
 
+  const otherPages = {
+    savings: <SavingsPage />,
+    cards: <CreditCardsPage />,
+    settings: (
+      <SettingsPage
+        options={options}
+        onAdd={handleAddOption}
+        onDelete={handleDeleteOption}
+        onBack={() => openView("main")}
+      />
+    ),
+  };
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Expense Tracker</h1>
         <nav className="app-nav">
-          <button
-            type="button"
-            className={view === "main" ? "" : "secondary"}
-            onClick={() => setView("main")}
-          >
-            Tracker
-          </button>
-          <button
-            type="button"
-            className={view === "cards" ? "" : "secondary"}
-            onClick={() => setView("cards")}
-          >
-            Credit Cards
-          </button>
-          <button
-            type="button"
-            className={view === "settings" ? "" : "secondary"}
-            onClick={() => setView("settings")}
-          >
-            Manage options
-          </button>
+          {VIEWS.map((v) => (
+            <button
+              type="button"
+              key={v.id}
+              className={view === v.id ? "" : "secondary"}
+              onClick={() => openView(v.id)}
+            >
+              {v.label}
+            </button>
+          ))}
         </nav>
       </header>
 
       {error && <div className="error-banner">{error}</div>}
 
-      {view === "settings" ? (
-        <SettingsPage
-          options={options}
-          onAdd={handleAddOption}
-          onDelete={handleDeleteOption}
-          onBack={() => setView("main")}
-        />
-      ) : view === "cards" ? (
-        <CreditCardsPage />
-      ) : (
+      {view === "main" ? (
         <>
           <section className="card">
             <h2>{editingTransaction ? "Edit transaction" : "Add transaction"}</h2>
@@ -203,6 +212,8 @@ export default function App() {
             )}
           </section>
         </>
+      ) : (
+        otherPages[view]
       )}
     </div>
   );
