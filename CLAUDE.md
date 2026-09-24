@@ -46,7 +46,7 @@ client/src/
   components/
     ui/                    Design-system primitives: BottomSheet, PageHeader (collapsing large title),
                            SegmentedControl, ChipGroup, Switch, StatCard, ProgressRing, DonutChart,
-                           Money, ListRow, EmptyState, ErrorBanner
+                           Money, ListRow, EmptyState, ErrorBanner, InfoButton (ⓘ → help sheet)
     MonthPicker.jsx        Years × months chip picker ("YYYY-MM"[] contract)
     PeriodSheet.jsx        MonthPicker in a bottom sheet
   features/
@@ -57,6 +57,8 @@ client/src/
     cards/                 Credit cards page + utilization chart (own api.js; separate from the ledger)
     settings/              Manage options page + More page
     appearance/            Appearance page: background + accent pickers with live preview
+    tags/                  Tags page: all transactions by kind → tag → month, all time by default (pure rules in domain.js)
+  content/help.js          In-app explanations shown by InfoButton (one entry per topic)
   theme/
     palettes.css           Accent palettes (light + dark variants) and the Black background
     palettes.js            BACKGROUNDS / ACCENTS option lists (ids match palettes.css)
@@ -106,6 +108,8 @@ Conventions in the data layer:
 | Filters sheet: years × months, single type (All/Earning/Expense/Saving), balance deduction (All/From balance/Not from balance) when Saving, tags | `features/home/FilterSheet.jsx`, `matchesFilters` |
 | Report: Expenses/Income/Savings toggle, donut by tag (top 7 + Other), per-tag share bars, % change vs previous month when one month is selected | `features/report/` |
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
+| Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
+| Info buttons (ⓘ) explaining balance deduction, savings, credit cards and tags | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
 | Themes: background (System / Light / Dark / Black AMOLED) × accent (Purple, Blue, Green, Teal, Orange, Pink), saved per device, applied instantly | `theme/`, `features/appearance/`, More → Appearance |
@@ -122,6 +126,8 @@ Conventions in the data layer:
 - **Theme is per device display state** (localStorage via `theme/themeStore.js`), not ledger data, so it doesn't go in IndexedDB. Dark mode is driven by `data-theme` set in JS, not by a `prefers-color-scheme` media query.
 - **Adding a palette:** add a light block and a dark block to `theme/palettes.css`, and an entry to `ACCENTS` in `theme/palettes.js`. Keep `--on-accent` on `--accent` and `--accent` on `--accent-soft` at ≥ 4.5:1 contrast.
 - New pages: add to `ROUTES` in `App.jsx` (plus `TABS` if it needs a bottom tab; prefer adding it to the More page).
+- **Explain non-obvious features in-app.** When a feature's purpose isn't self-evident, add a topic to `content/help.js` (what it is, why it exists, one example) and place an `InfoButton` next to it (`info` prop on `PageHeader` / `Switch`). If the ⓘ sits inside a `<label>`, give the label an explicit `htmlFor`, or taps on the label will open the help instead of toggling the control.
+- Bottom sheets render into `<body>` via a portal and can stack (e.g. help on top of a form). Escape closes only the top one.
 
 ## How extensible the code is today
 

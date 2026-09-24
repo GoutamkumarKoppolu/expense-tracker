@@ -68,6 +68,13 @@ export const dateHeading = (date) =>
     { weekday: "long", day: "numeric", month: "long", year: "numeric" }
   );
 
+// "24 Sept" style date for compact rows.
+export const shortDate = (date) =>
+  new Date(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10))).toLocaleDateString(
+    LOCALE,
+    { day: "numeric", month: "short" }
+  );
+
 // Groups date-sorted rows into [{ date, rows }] preserving order.
 export function groupByDate(rows) {
   const groups = [];

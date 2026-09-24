@@ -1,0 +1,38 @@
+// In-app explanations shown by <InfoButton topic="..." />. Keep them short
+// and concrete: what it is, why it exists, one example.
+export const HELP = {
+  balanceDeduction: {
+    title: "Deduct from current balance",
+    body: [
+      "Turn this on when the money you're saving comes out of your own balance, e.g. part of your salary. Your current balance goes down by that amount.",
+      "Turn it off for money that comes from someone else, like money a family member or friend gives you to keep. It still counts as savings, but it doesn't reduce your balance, because it was never part of it.",
+    ],
+    example: "Balance ₹5,000. Save ₹1,000 from salary → balance ₹4,000. Save ₹2,000 you were given → balance stays ₹4,000. Total savings: ₹3,000.",
+  },
+  savings: {
+    title: "Why savings are tracked separately",
+    body: [
+      "Not all savings come from your earnings. Some you set aside from your salary; some is money other people give you that you keep aside.",
+      "Savings are grouped into pots by tag, so you can see exactly how much you saved from your salary, how much from money you were given, and so on, and how much of each you've already used.",
+      "Using savings lowers that pot. It never changes your current balance.",
+    ],
+    example: "Pot \"Salary savings\": ₹5,000. Pot \"Gift money\": ₹2,000 you were given. Spend ₹1,500 from \"Salary savings\" → ₹3,500 left there, the ₹2,000 in \"Gift money\" untouched.",
+  },
+  creditCards: {
+    title: "Why credit cards have their own page",
+    body: [
+      "Card statements often don't make it clear what each amount was spent on.",
+      "Log card spends here as you make them, with a short description. When the bill arrives, compare the month's logged total with the statement: any difference is a spend you forgot to log or a charge you should check.",
+      "These entries are kept separate from your balance, so nothing is counted twice.",
+    ],
+    example: "Logged this month: ₹12,400. Statement: ₹13,150. The ₹750 difference is worth a look.",
+  },
+  tags: {
+    title: "How tags help",
+    body: [
+      "A tag groups related transactions, even across months. Use the same tag every time and you can see all of them together, with the total.",
+      "Open More → Tags to see every tag, grouped by expenses, savings and income, or pick tags in the Home filters.",
+    ],
+    example: "Tag every trip expense \"Goa trip\", or each of 12 monthly EMIs \"Car loan\", then open that tag to see them all.",
+  },
+};

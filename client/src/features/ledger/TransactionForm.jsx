@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Switch from "../../components/ui/Switch";
+import InfoButton from "../../components/ui/InfoButton";
 import { deductsFromBalance } from "../../domain/transactions";
 import { today } from "../../utils/format";
 
@@ -93,13 +94,17 @@ export default function TransactionForm({ id, transaction, transactionTypes, pay
           checked={form.deduct_from_balance}
           onChange={(checked) => set("deduct_from_balance", checked)}
           label="Deduct from current balance"
+          info="balanceDeduction"
           description="Turn off for money that didn't come from your balance, e.g. a gift."
         />
       )}
 
-      <label className="field">
-        <span className="field-label">Tag / Category</span>
+      <label className="field" htmlFor="tx-tag">
+        <span className="field-label">
+          Tag / Category <InfoButton topic="tags" />
+        </span>
         <input
+          id="tx-tag"
           type="text"
           name="tag"
           list="tag-options"

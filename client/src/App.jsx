@@ -12,6 +12,7 @@ import CreditCardsPage from "./features/cards/CreditCardsPage";
 import SettingsPage from "./features/settings/SettingsPage";
 import MorePage from "./features/settings/MorePage";
 import AppearancePage from "./features/appearance/AppearancePage";
+import TagsPage from "./features/tags/TagsPage";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
@@ -22,6 +23,7 @@ const ROUTES = {
   report: { page: ReportPage, tab: "report", add: true },
   savings: { page: SavingsPage, tab: "savings", add: true },
   more: { page: MorePage, tab: "more" },
+  tags: { page: TagsPage, tab: "more", add: true },
   cards: { page: CreditCardsPage, tab: "more" },
   settings: { page: SettingsPage, tab: "more" },
   appearance: { page: AppearancePage, tab: "more" },

@@ -2,6 +2,7 @@ import BottomSheet from "../../components/ui/BottomSheet";
 import ChipGroup from "../../components/ui/ChipGroup";
 import SegmentedControl from "../../components/ui/SegmentedControl";
 import MonthPicker from "../../components/MonthPicker";
+import InfoButton from "../../components/ui/InfoButton";
 import { DEDUCTION_FILTERS } from "../../domain/transactions";
 import { DEDUCTION_OPTIONS, KIND_OPTIONS } from "./filterOptions";
 
@@ -40,7 +41,9 @@ export default function FilterSheet({ filters, tags, onChange, onReset, onClose 
 
       {filters.kind === "saving" && (
         <div className="sheet-section">
-          <h3>Balance deduction</h3>
+          <h3>
+            Balance deduction <InfoButton topic="balanceDeduction" />
+          </h3>
           <SegmentedControl
             label="Balance deduction"
             options={DEDUCTION_OPTIONS}
@@ -51,7 +54,9 @@ export default function FilterSheet({ filters, tags, onChange, onReset, onClose 
       )}
 
       <div className="sheet-section">
-        <h3>Tags</h3>
+        <h3>
+          Tags <InfoButton topic="tags" />
+        </h3>
         {tags.length ? (
           <ChipGroup
             label="Tags"

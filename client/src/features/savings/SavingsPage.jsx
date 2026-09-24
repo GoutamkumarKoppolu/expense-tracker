@@ -62,7 +62,7 @@ export default function SavingsPage() {
 
   return (
     <>
-      <PageHeader title="Savings" subtitle={`${currency(summary.remaining)} available`} />
+      <PageHeader title="Savings" subtitle={`${currency(summary.remaining)} available`} info="savings" />
       <div className="page-body">
         {!showWithdraw && <ErrorBanner message={error} onDismiss={() => setError("")} />}
 
@@ -106,7 +106,11 @@ export default function SavingsPage() {
       {showWithdraw && (
         <BottomSheet
           title="Use savings"
-          onClose={() => setShowWithdraw(false)}
+          onClose={() => {
+            // An error from a failed attempt belongs to the sheet, not the page.
+            setShowWithdraw(false);
+            setError("");
+          }}
           footer={
             <button type="submit" form={WITHDRAW_FORM_ID} className="btn btn-primary btn-block">
               Use savings

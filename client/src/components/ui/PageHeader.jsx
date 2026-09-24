@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import InfoButton from "./InfoButton";
 
 // One UI "large title": a tall, read-only header in the top third of the
 // screen that collapses into a compact sticky app bar once scrolled past.
-export default function PageHeader({ title, subtitle, onBack, actions }) {
+// `info` is an optional HELP topic shown as an ⓘ next to the title.
+export default function PageHeader({ title, subtitle, onBack, actions, info }) {
   const titleRef = useRef(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -31,7 +33,10 @@ export default function PageHeader({ title, subtitle, onBack, actions }) {
         <div className="app-bar-actions">{actions}</div>
       </div>
       <header className="page-header">
-        <h1 ref={titleRef}>{title}</h1>
+        <div className="page-title-row">
+          <h1 ref={titleRef}>{title}</h1>
+          {info && <InfoButton topic={info} />}
+        </div>
         {subtitle && <p className="page-subtitle">{subtitle}</p>}
       </header>
     </>

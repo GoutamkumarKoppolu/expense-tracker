@@ -1568,3 +1568,200 @@ button.list-row:active {
   box-shadow: 0 6px 16px color-mix(in srgb, var(--hero-to) 35%, transparent);
   color: #fff;
 }
+
+/* ---------- Info buttons + help ---------- */
+
+.info-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+/* Bigger invisible hit area for thumbs without changing the layout. */
+.info-btn::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+
+.info-btn:hover,
+.info-btn:focus-visible {
+  color: var(--accent);
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-title-row .info-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.sheet-section h3,
+.field-label,
+.switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.help-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  line-height: 1.55;
+}
+
+.help-body p {
+  margin: 0;
+}
+
+.help-example {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.help-example svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+/* ---------- Tags ---------- */
+
+.search-field {
+  position: relative;
+  display: block;
+}
+
+.search-field svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-field .input {
+  padding-left: 42px;
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.tag-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tag-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tag-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 12px 12px 14px;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+
+.tag-card-head:active {
+  background: var(--surface-2);
+}
+
+.tag-card-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tag-card-title {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-card-sub {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.tag-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.tag-card-total {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tag-card-chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.tag-card.is-open .tag-card-chevron {
+  transform: rotate(180deg);
+}
+
+.tag-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 10px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.tag-card-body .tx-group-head {
+  padding: 0 6px 6px;
+}
+
+.tag-card-rows {
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.tag-card-rows .tx-row {
+  padding: 10px 12px;
+}

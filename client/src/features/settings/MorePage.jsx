@@ -1,4 +1,4 @@
-import { CreditCard, Palette, Settings, ShieldCheck } from "lucide-react";
+import { CreditCard, Palette, Settings, ShieldCheck, Tags } from "lucide-react";
 import { useTheme } from "../../theme/useTheme";
 import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
@@ -13,6 +13,13 @@ export default function MorePage({ navigate }) {
       <PageHeader title="More" />
       <div className="page-body">
         <div className="card card-list">
+          <ListRow
+            icon={Tags}
+            tone="positive"
+            title="Tags"
+            subtitle="Every tag across months, e.g. a trip or a loan"
+            onClick={() => navigate("tags")}
+          />
           <ListRow
             icon={CreditCard}
             tone="warning"

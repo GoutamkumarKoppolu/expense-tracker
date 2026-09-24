@@ -18,7 +18,7 @@ function activeFilterLabels(filters) {
   return [...labels, ...filters.tags];
 }
 
-export default function HomePage({ onOpenTransaction }) {
+export default function HomePage({ navigate, onOpenTransaction }) {
   const ledger = useLedger();
   const [showFilters, setShowFilters] = useState(false);
   const { earnings, expenses, savings } = computeTotals(ledger.transactions);
@@ -55,6 +55,9 @@ export default function HomePage({ onOpenTransaction }) {
 
         <div className="section-head">
           <h2>Transactions</h2>
+          <button type="button" className="link-btn" onClick={() => navigate("tags")}>
+            By tag
+          </button>
         </div>
         <button type="button" className="filter-bar" onClick={() => setShowFilters(true)}>
           <span className="filter-bar-icon">

@@ -229,7 +229,17 @@ function CardSection({ card, index, months, onChanged, onDeleteCard }) {
         <p className="muted cc-empty">No spend logged for this period.</p>
       )}
 
-      {showAdd && <AddSpendSheet card={card} error={error} onAdd={handleAdd} onClose={() => setShowAdd(false)} />}
+      {showAdd && (
+        <AddSpendSheet
+          card={card}
+          error={error}
+          onAdd={handleAdd}
+          onClose={() => {
+            setShowAdd(false);
+            setError("");
+          }}
+        />
+      )}
     </section>
   );
 }
@@ -282,7 +292,12 @@ export default function CreditCardsPage({ navigate }) {
 
   return (
     <>
-      <PageHeader title="Credit cards" subtitle="Tracked separately from your balance" onBack={() => navigate("more")} />
+      <PageHeader
+        title="Credit cards"
+        subtitle="Tracked separately from your balance"
+        info="creditCards"
+        onBack={() => navigate("more")}
+      />
       <div className="page-body">
         {!showAddCard && <ErrorBanner message={error} onDismiss={() => setError("")} />}
 
@@ -326,7 +341,16 @@ export default function CreditCardsPage({ navigate }) {
         </div>
       </div>
 
-      {showAddCard && <AddCardSheet error={error} onAdd={handleAddCard} onClose={() => setShowAddCard(false)} />}
+      {showAddCard && (
+        <AddCardSheet
+          error={error}
+          onAdd={handleAddCard}
+          onClose={() => {
+            setShowAddCard(false);
+            setError("");
+          }}
+        />
+      )}
       {showPeriod && (
         <PeriodSheet selectedMonths={selectedMonths} onChange={setSelectedMonths} onClose={() => setShowPeriod(false)} />
       )}

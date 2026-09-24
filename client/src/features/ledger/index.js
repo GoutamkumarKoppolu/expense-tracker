@@ -4,4 +4,5 @@ export { LedgerProvider } from "./LedgerProvider";
 export { useLedger, defaultFilters } from "./ledgerContext";
 export { default as TransactionSheet } from "./TransactionSheet";
 export { default as TransactionList } from "./TransactionList";
+export { default as TransactionRow } from "./TransactionRow";
 export { KIND_META, kindMeta } from "./kindMeta";
