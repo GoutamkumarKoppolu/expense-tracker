@@ -1,4 +1,4 @@
-import { currency } from "../utils/format";
+import { currency } from "../../utils/format";
 
 // Fixed categorical order — colorblind-validated (adjacent ΔE ≥ 8 CVD, ≥ 15
 // normal-vision on this app's light/dark surfaces). Never reassign a slot by
@@ -11,7 +11,7 @@ function lastMonthsAscending(count) {
   for (let i = count - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleString(undefined, { month: "short", year: "2-digit" });
+    const label = d.toLocaleString("en-IN", { month: "short", year: "2-digit" });
     months.push({ value, label });
   }
   return months;
@@ -19,7 +19,7 @@ function lastMonthsAscending(count) {
 
 export default function CardUtilizationChart({ cards, utilization }) {
   if (!cards.length) {
-    return <p className="empty-state">Add a credit card above to see monthly utilization.</p>;
+    return <p className="muted">Add a credit card to see monthly utilization.</p>;
   }
 
   const months = lastMonthsAscending(6);
@@ -70,6 +70,7 @@ export default function CardUtilizationChart({ cards, utilization }) {
         ))}
       </div>
 
+      <div className="table-scroll">
       <table className="cc-utilization-table">
         <thead>
           <tr>
@@ -102,6 +103,7 @@ export default function CardUtilizationChart({ cards, utilization }) {
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { HandCoins } from "lucide-react";
+import PageHeader from "../../components/ui/PageHeader";
+import BottomSheet from "../../components/ui/BottomSheet";
+import ErrorBanner from "../../components/ui/ErrorBanner";
+import { useLedger } from "../ledger";
+import { currency } from "../../utils/format";
 import { createWithdrawal, deleteWithdrawal, fetchSavingsData } from "./api";
 import { buildHistory, computePots, summarizePots } from "./domain";
 import SavingsSummary from "./SavingsSummary";
@@ -6,10 +12,15 @@ import PotList from "./PotList";
 import WithdrawalForm from "./WithdrawalForm";
 import SavingsHistory from "./SavingsHistory";
 
-// Self-contained feature page: owns its state and data loading.
+const WITHDRAW_FORM_ID = "withdraw-form";
+
+// Self-contained feature page: owns its state and data loading. Reloads when
+// the ledger changes (e.g. a Saving added via the + button).
 export default function SavingsPage() {
+  const { transactions: ledgerVersion, refresh: refreshLedger } = useLedger();
   const [data, setData] = useState({ savings: [], withdrawals: [] });
   const [selectedTag, setSelectedTag] = useState("");
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -20,16 +31,20 @@ export default function SavingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(load, [load]);
+  useEffect(load, [load, ledgerVersion]);
 
   const pots = computePots(data.savings, data.withdrawals);
+  const summary = summarizePots(pots);
   const history = buildHistory(data.savings, data.withdrawals, selectedTag);
+  const canWithdraw = pots.some((p) => p.remaining > 0);
 
-  async function handleWithdraw(form) {
+  // Withdrawals change Overall Savings on Home, so refresh the ledger too.
+  async function mutate(action) {
     try {
       setError("");
-      await createWithdrawal(form);
+      await action();
       load();
+      refreshLedger();
       return true;
     } catch (e) {
       setError(e.message);
@@ -37,48 +52,71 @@ export default function SavingsPage() {
     }
   }
 
-  async function handleDeleteWithdrawal(id) {
-    try {
-      setError("");
-      await deleteWithdrawal(id);
-      load();
-    } catch (e) {
-      setError(e.message);
-    }
+  async function handleWithdraw(form) {
+    if (await mutate(() => createWithdrawal(form))) setShowWithdraw(false);
   }
 
-  if (loading) return <p>Loading…</p>;
+  function handleDeleteWithdrawal(id) {
+    if (window.confirm("Delete this entry? The money goes back into its pot.")) mutate(() => deleteWithdrawal(id));
+  }
 
   return (
     <>
-      {error && <div className="error-banner">{error}</div>}
+      <PageHeader title="Savings" subtitle={`${currency(summary.remaining)} available`} />
+      <div className="page-body">
+        {!showWithdraw && <ErrorBanner message={error} onDismiss={() => setError("")} />}
 
-      <section className="card">
-        <h2>Savings overview</h2>
-        <SavingsSummary summary={summarizePots(pots)} />
-      </section>
+        {loading ? (
+          <p className="muted">Loading…</p>
+        ) : (
+          <>
+            <SavingsSummary summary={summary} />
 
-      <section className="card">
-        <h2>Pots</h2>
-        <PotList pots={pots} selectedTag={selectedTag} onSelect={setSelectedTag} />
-      </section>
-
-      <section className="card">
-        <h2>Use savings</h2>
-        <WithdrawalForm pots={pots} onSubmit={handleWithdraw} />
-      </section>
-
-      <section className="card">
-        <div className="section-head">
-          <h2>History{selectedTag && ` — ${selectedTag}`}</h2>
-          {selectedTag && (
-            <button type="button" className="link-btn" onClick={() => setSelectedTag("")}>
-              Show all pots
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              disabled={!canWithdraw}
+              onClick={() => {
+                setError("");
+                setShowWithdraw(true);
+              }}
+            >
+              <HandCoins size={18} /> Use savings
             </button>
-          )}
-        </div>
-        <SavingsHistory entries={history} onDeleteWithdrawal={handleDeleteWithdrawal} />
-      </section>
+
+            <div className="section-head">
+              <h2>Pots</h2>
+              <span className="muted">Tap a pot to see its history</span>
+            </div>
+            <PotList pots={pots} selectedTag={selectedTag} onSelect={setSelectedTag} />
+
+            <div className="section-head">
+              <h2>History{selectedTag && ` · ${selectedTag}`}</h2>
+              {selectedTag && (
+                <button type="button" className="link-btn" onClick={() => setSelectedTag("")}>
+                  Show all
+                </button>
+              )}
+            </div>
+            <SavingsHistory entries={history} onDeleteWithdrawal={handleDeleteWithdrawal} />
+          </>
+        )}
+      </div>
+
+      {showWithdraw && (
+        <BottomSheet
+          title="Use savings"
+          onClose={() => setShowWithdraw(false)}
+          footer={
+            <button type="submit" form={WITHDRAW_FORM_ID} className="btn btn-primary btn-block">
+              Use savings
+            </button>
+          }
+        >
+          <ErrorBanner message={error} />
+          <WithdrawalForm id={WITHDRAW_FORM_ID} pots={pots} initialTag={selectedTag} onSubmit={handleWithdraw} />
+        </BottomSheet>
+      )}
     </>
   );
 }

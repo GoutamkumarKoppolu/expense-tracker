@@ -34,23 +34,37 @@ No `.env`, database, or server is needed. To reset local data, delete the `expen
 
 ```
 client/src/
-  main.jsx               React root
-  App.jsx                Top-level state, VIEWS nav registry ("main" | "savings" | "cards" | "settings"), data loading, mutation handlers
-  api.js                 Core data-access/service layer (async functions over Dexie)
-  domain/transactions.js Pure ledger rules: kinds, balance-deduction flag, computeTotals, matchesFilters
-  utils/format.js        Shared helpers: currency, today (local date), currentMonth
-  features/savings/      Savings feature module (page, components, api.js, domain.js)
+  main.jsx                 React root
+  App.jsx                  Shell only: ROUTES page registry, bottom nav, global add/edit transaction sheet
+  app/
+    useHashRoute.js        Hash router (#/savings). Real history entries, so the Android back button works
+    BottomNav.jsx          One UI bottom tabs with the raised centre + button
+  api.js                   Core ledger data access: transactions, options, overview, registerTransactionGuard
+  domain/transactions.js   Pure ledger rules: kinds, balance-deduction flag, computeTotals, matchesFilters
+  utils/format.js          Shared helpers: currency, compactCurrency (₹12.35L), dates, periodLabel, groupByDate
+  components/
+    ui/                    Design-system primitives: BottomSheet, PageHeader (collapsing large title),
+                           SegmentedControl, ChipGroup, Switch, StatCard, ProgressRing, DonutChart,
+                           Money, ListRow, EmptyState, ErrorBanner
+    MonthPicker.jsx        Years × months chip picker ("YYYY-MM"[] contract)
+    PeriodSheet.jsx        MonthPicker in a bottom sheet
+  features/
+    ledger/                Shared ledger state (LedgerProvider + useLedger), TransactionForm/Sheet/List, kindMeta
+    home/                  Home page: balance hero, "Your money" cards, FilterSheet, transaction list
+    report/                Report page: per-tag donut + breakdown, change vs previous month (pure rules in domain.js)
+    savings/               Savings page: pots, withdrawals, history (api.js, domain.js, index.js registers its guard)
+    cards/                 Credit cards page + utilization chart (own api.js; separate from the ledger)
+    settings/              Manage options page + More page
   db/
-    schema.js            Dexie store definitions (STORES = v1, STORES_V2 = v2 additions)
-    index.js             Dexie instance, versioning, populate -> seed, storage.persist()
-    seed.js              Default transaction types / payment methods / payment sources
-    validators.js        Pure validation helpers (throw Error with user-facing messages)
-  components/            Presentational + page components
-  index.css              Theme tokens (CSS variables, light/dark via prefers-color-scheme)
-  App.css                Component styles, safe-area padding for Android status bar
+    schema.js              Dexie store definitions (STORES = v1, STORES_V2 = v2 additions)
+    index.js               Dexie instance, versioning, populate -> seed, storage.persist()
+    seed.js                Default transaction types / payment methods / payment sources
+    validators.js          Pure validation helpers (throw Error with user-facing messages)
+  index.css                Design tokens (colors, radii, shadows) for light + dark mode, base element styles
+  App.css                  All component/page styles, grouped by section
 ```
 
-**Data flow:** Component → handler in `App.jsx` (or page component) → `api.js` function → Dexie (`db`). Errors are thrown as `Error(message)` and shown via `setError(e.message)` in an error banner. After a mutation, the caller reloads the affected data (`refreshAfterMutation()` in App.jsx).
+**Data flow:** Page → `useLedger()` action (e.g. `saveTransaction`) or the feature's own `api.js` → Dexie (`db`). Service functions throw `Error(message)`. The ledger context and each feature page catch it and show it in an `ErrorBanner` (inside the open sheet when there is one). Ledger mutations call `refresh()`, and pages with their own queries (Report, Savings) reload when `useLedger().transactions` changes.
 
 **Data model (IndexedDB stores):**
 | Store | Fields |
@@ -72,40 +86,48 @@ Conventions in the data layer:
   - Using savings (a withdrawal) reduces savings only, never the balance. Overall Savings = all savings − withdrawals.
   - A pot can never go below zero: withdrawals are capped at the pot's remaining amount, and editing/deleting a Saving transaction that would push its pot negative is blocked.
 - **Cross-feature hooks:** core `api.js` exposes `registerTransactionGuard(fn)` so a feature can veto ledger edits/deletes without the core importing the feature. Each feature wires itself up in its `features/<name>/index.js` entry point, and App imports the feature only from there.
-- There are no foreign keys in IndexedDB, so cascades are done manually inside a Dexie transaction (see `deleteCreditCard`).
+- There are no foreign keys in IndexedDB, so cascades are done manually inside a Dexie transaction (see `deleteCreditCard` in `features/cards/api.js`).
 - Option CRUD is generic over the `OPTION_KINDS` / `TABLE_BY_KIND` maps in `api.js`.
 
 ## Features / components
 
 | Feature | Where |
 |---|---|
-| Add/edit/delete transactions (type, amount, tag, date, note, payment method, payment source, "Deduct from current balance" checkbox for savings) | `TransactionForm.jsx`, `TransactionList.jsx`, `App.jsx` handlers |
-| Single-select type filter (All/Earning/Expense/Saving) + balance-deduction filter (All/From balance/Not from balance) when Saving | `KindFilter.jsx`, `matchesFilters` |
-| Savings page: overview (saved, from/not from balance, used, remaining), per-tag pots, "Use savings" withdrawals (capped at pot remaining), history timeline filterable by pot | `features/savings/` |
-| Year × month multi-select filter (reusable `MultiSelectDropdown`, `useClickOutside`) | `YearMonthSelector.jsx` |
-| Tag filter | `TagFilter.jsx` |
-| Summary: earnings, expenses, savings for the selection, plus all-time savings and balance | `SummaryPanel.jsx` (overview from `fetchOverview`) |
-| Spending-by-tag bar chart and table | `SpendingChart.jsx`, `SummaryPanel.jsx` |
-| Credit cards: add/delete cards, per-card transactions (separate from the main ledger), month filter | `CreditCardsPage.jsx` (owns its own state and data loading) |
-| Monthly card utilization chart (last 6 months, fixed colorblind-safe palette `--cat-1..8`) | `CardUtilizationChart.jsx` |
-| Manage options: transaction types (with kind), payment methods, payment sources | `SettingsPage.jsx` |
+| Navigation: bottom tabs Home · Report · **+** · Savings · More; More → Credit cards, Manage options; Android back button via hash routes | `App.jsx` (`ROUTES`, `TABS`), `app/` |
+| Add/edit/delete transactions in a bottom sheet (amount, type chips, "Deduct from current balance" switch for savings, tag + recent-tag chips, date, note, payment method/source) | `features/ledger/TransactionSheet.jsx`, `TransactionForm.jsx` |
+| Home: balance hero (current balance, overall savings), Income/Expenses/Saved cards for the filters, date-grouped transaction list | `features/home/HomePage.jsx`, `features/ledger/TransactionList.jsx` |
+| Filters sheet: years × months, single type (All/Earning/Expense/Saving), balance deduction (All/From balance/Not from balance) when Saving, tags | `features/home/FilterSheet.jsx`, `matchesFilters` |
+| Report: Expenses/Income/Savings toggle, donut by tag (top 7 + Other), per-tag share bars, % change vs previous month when one month is selected | `features/report/` |
+| Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
+| Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
+| Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
+| Light/dark theme (automatic), safe-area insets for the Android status/nav bars | `index.css`, `App.css` |
 | Offline storage and Android packaging | `db/`, `capacitor.config.json`, `client/android/` |
+
+## UI conventions (One UI, one-handed)
+
+- **Top third is for viewing, bottom is for doing.** Pages start with a tall `PageHeader` (large title that collapses into a sticky app bar on scroll) or the Home hero. Interactive controls sit lower: bottom nav, the centre + button, full-width primary buttons, and bottom sheets with their actions in the sheet footer.
+- **Forms and pickers open in a `BottomSheet`**, never inline at the top of a page. Submit buttons live in the sheet footer (`<button form={FORM_ID}>`).
+- **Tap targets ≥ 44px**, and choices are chips or segmented controls rather than small dropdowns where the list is short.
+- **Cards and rows, not wide tables.** Only the utilization table remains, inside `.table-scroll`. Test at 360, 390 and 412px widths: there must be no horizontal page scroll.
+- **Colors only from tokens** in `index.css`, with both light and dark values. Charts use `--cat-1..8` in fixed order.
+- New pages: add to `ROUTES` in `App.jsx` (plus `TABS` if it needs a bottom tab; prefer adding it to the More page).
 
 ## How extensible the code is today
 
 **Easy to extend:**
-- New data access: add a function to `api.js`, and components never touch Dexie directly.
+- New pages: create `features/<name>/` with a page that owns its state and data (see `features/savings/`), then add one line to `ROUTES` in `App.jsx`.
+- New ledger-derived views: read from `useLedger()` instead of fetching and threading props.
+- New UI: compose from `components/ui/` before writing new primitives.
 - New option lists: add an entry to `OPTION_KINDS` / `TABLE_BY_KIND` / `NOT_FOUND_MESSAGE` plus a store and a seed.
-- New validation: add pure helpers to `db/validators.js`.
-- New pages: `features/savings/` is the model for a self-contained feature module (page owns its state and data loading; pure rules in `domain.js`; data access in `api.js`). Register the page in `VIEWS` and `otherPages` in `App.jsx`.
-- Theming: all colors are CSS variables in `index.css`.
+- New validation: add pure helpers to `db/validators.js`. New business rules: add pure functions to a `domain.js`.
+- Cross-feature rules: use `registerTransactionGuard` rather than importing a feature into the core.
 
 **Friction points to be aware of (improve them when you touch them, don't spread them):**
-- `App.jsx` still holds all Tracker-page state and handlers. Extract it into its own page when it next grows.
-- `api.js` is one file covering transactions, options, and credit cards.
 - Filtering loads whole tables and filters in memory. That's fine at personal scale, but use Dexie indexes if data grows.
-- Schema changes need a **new `db.version(n)`**, not an edit to version 1. Editing v1 breaks existing installs, including users' phones.
-- No tests.
+- Schema changes need a **new `db.version(n)`**, not an edit to an existing version. Editing one breaks existing installs, including users' phones.
+- Savings pots are keyed by tag name, and withdrawals store the tag string, so renames rely on the savings guard.
+- No automated tests yet. Browser checks are done manually or with a throwaway Playwright script.
 
 ## Rules for building new features
 
@@ -113,11 +135,11 @@ Every new feature must be **decoupled** so it can be added, changed, or removed 
 
 1. **Feature isolation.** Put a new feature in its own module: `src/features/<feature>/` with its page/components, its own data functions (e.g. `features/<feature>/api.js`), and any feature-specific helpers. A feature should be removable by deleting its folder and its one registration line.
 2. **Layering: UI → service → storage.** Components never import `db` or Dexie. All persistence goes through service functions (`api.js` or the feature's own api module), which return plain objects and throw `Error` with user-facing messages. Keep business logic (totals, grouping, validation) in pure functions outside components so it can be tested and reused.
-3. **Single responsibility.** One component does one thing. Split pages into container (state + data loading) and presentational components (props in, JSX out), the way `CreditCardsPage` → `CardUtilizationChart` does. Keep files small and focused.
-4. **Open/closed: extend, don't modify.** Prefer config maps and registries (like `OPTION_KINDS` / `TABLE_BY_KIND` / `VIEWS`) over new `if/else` or ternary branches.
+3. **Single responsibility.** One component does one thing. Split pages into container (state + data loading) and presentational components (props in, JSX out), the way `SavingsPage` → `PotList` / `SavingsHistory` does. Keep files small and focused.
+4. **Open/closed: extend, don't modify.** Prefer config maps and registries (like `OPTION_KINDS` / `TABLE_BY_KIND` / `ROUTES` / `KIND_META`) over new `if/else` or ternary branches.
 5. **Don't touch unrelated features.** A new feature must not change the behavior, props, or data shape of existing features. If a shared contract (an `api.js` signature, a store shape, a component's props) must change, keep it backward-compatible and update every caller in the same change.
-6. **DRY with shared utilities.** Reusable helpers belong in shared modules (`src/utils/`, `src/components/common/`, `src/hooks/`); use `utils/format.js` for currency and dates, and move `MultiSelectDropdown` / `useClickOutside` out of `YearMonthSelector.jsx` when something else needs them. Don't copy-paste helpers.
+6. **DRY with shared utilities.** Reusable helpers belong in shared modules: `utils/format.js` for currency and dates, `components/ui/` for UI primitives, and `src/hooks/` for hooks. Don't copy-paste helpers.
 7. **Safe schema evolution.** Add stores and indexes via a new `db.version(n).stores({...})` (with `.upgrade()` for data migrations). Never edit an existing version, never drop user data, and keep old data readable.
 8. **Keep the offline, no-backend model.** No network calls, no server dependency, no new heavy dependencies without a clear need. Everything must work inside the Android WebView.
-9. **Follow existing conventions.** Use string dates, `type_kind` for totals, errors surfaced via `setError(e.message)`, colors from CSS variables (support both light and dark), respect the safe-area padding, and match the existing JSX/CSS style.
-10. **Verify before finishing.** Run `npm run lint` and `npm run build` in `client/`, then exercise the feature in `npm run dev`, including regressions in the Tracker, Credit Cards, and Manage options views. If you add pure logic, add tests for it (introduce Vitest if it isn't set up yet).
+9. **Follow existing conventions.** Use string dates, `type_kind` for totals, errors surfaced via `ErrorBanner`, colors from CSS tokens (support both light and dark), respect the safe-area padding, follow the One UI conventions above, and match the existing JSX/CSS style.
+10. **Verify before finishing.** Run `npm run lint` and `npm run build` in `client/`, then exercise the feature in `npm run dev` at phone width (360–412px) and desktop, in light and dark mode, including regressions on Home, Report, Savings, Credit cards and Manage options. If you add pure logic, add tests for it (introduce Vitest if it isn't set up yet).

@@ -1,55 +1,58 @@
-import { currency } from "../../utils/format";
+import { HandCoins, History, PiggyBank, Trash2 } from "lucide-react";
+import EmptyState from "../../components/ui/EmptyState";
+import { currency, dateHeading, groupByDate } from "../../utils/format";
 
-// Timeline of money in (Saving transactions from the Tracker) and money out
-// (withdrawals). Deposits are edited on the Tracker page; withdrawals here.
+// Timeline of money in (Saving transactions from the ledger) and money out
+// (withdrawals). Deposits are edited from Home; withdrawals are deleted here.
 export default function SavingsHistory({ entries, onDeleteWithdrawal }) {
   if (!entries.length) {
-    return <p className="empty-state">No savings history for this selection.</p>;
+    return <EmptyState icon={History}>No savings history for this selection.</EmptyState>;
   }
 
   return (
-    <table className="transaction-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Pot</th>
-          <th>Entry</th>
-          <th>Note</th>
-          <th className="amount-col">Amount</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.map((e) => {
-          const isDeposit = e.entry === "deposit";
-          return (
-            <tr key={e.key} className={isDeposit ? "row-saving" : "row-expense"}>
-              <td>{e.date}</td>
-              <td>{e.tag}</td>
-              <td>
-                {isDeposit ? "Saved" : "Used"}
-                {isDeposit && (
-                  <span className={`deduct-badge ${e.deducted ? "" : "deduct-badge-off"}`}>
-                    {e.deducted ? "from balance" : "not from balance"}
+    <div className="tx-groups">
+      {groupByDate(entries).map((g) => (
+        <section key={g.date} className="tx-group">
+          <div className="tx-group-head">
+            <span>{dateHeading(g.date)}</span>
+          </div>
+          <div className="card card-list">
+            {g.rows.map((e) => {
+              const isDeposit = e.entry === "deposit";
+              return (
+                <div className="tx-row" key={e.key}>
+                  <span className={`icon-badge ${isDeposit ? "tone-savings" : "tone-negative"}`}>
+                    {isDeposit ? <PiggyBank size={18} /> : <HandCoins size={18} />}
                   </span>
-                )}
-              </td>
-              <td>{e.note || "—"}</td>
-              <td className="amount-col">
-                {isDeposit ? "+" : "-"}
-                {currency(e.amount)}
-              </td>
-              <td className="row-actions">
-                {!isDeposit && (
-                  <button className="link-btn danger" onClick={() => onDeleteWithdrawal(e.id)}>
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                  <span className="tx-main">
+                    <span className="tx-title">{isDeposit ? `Saved to ${e.tag}` : `Used from ${e.tag}`}</span>
+                    {e.note && <span className="tx-sub">{e.note}</span>}
+                    {isDeposit && (
+                      <span className={`pill ${e.deducted ? "tone-savings" : "tone-accent"}`}>
+                        {e.deducted ? "From balance" : "Not from balance"}
+                      </span>
+                    )}
+                  </span>
+                  <span className={`tx-amount ${isDeposit ? "text-savings" : "text-negative"}`}>
+                    {isDeposit ? "+" : "−"}
+                    {currency(e.amount)}
+                  </span>
+                  {!isDeposit && (
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn-danger"
+                      onClick={() => onDeleteWithdrawal(e.id)}
+                      aria-label={`Delete ${currency(e.amount)} used from ${e.tag}`}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }

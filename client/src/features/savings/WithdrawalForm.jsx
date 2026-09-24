@@ -1,62 +1,74 @@
 import { useState } from "react";
 import { currency, today } from "../../utils/format";
 
-const emptyForm = () => ({ tag: "", amount: "", date: today(), note: "" });
-
-// Records money taken out of a savings pot. Only pots with money left are offered.
-export default function WithdrawalForm({ pots, onSubmit }) {
-  const [form, setForm] = useState(emptyForm);
+// Records money taken out of a savings pot. Only pots with money left are
+// offered. Submitted by the sheet's footer button via the `id`/`form` attribute.
+export default function WithdrawalForm({ id, pots, initialTag = "", onSubmit }) {
   const available = pots.filter((p) => p.remaining > 0);
+  const [form, setForm] = useState(() => ({
+    tag: available.some((p) => p.tag === initialTag) ? initialTag : "",
+    amount: "",
+    date: today(),
+    note: "",
+  }));
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  }
+  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
-    if (await onSubmit({ ...form, amount: Number(form.amount) })) setForm(emptyForm());
-  }
-
-  if (!available.length) {
-    return <p className="empty-state">No savings available to use.</p>;
+    onSubmit({ ...form, amount: Number(form.amount) });
   }
 
   return (
-    <form className="transaction-form" onSubmit={handleSubmit}>
-      <div className="field-row">
-        <label>
-          From pot
-          <select name="tag" value={form.tag} onChange={handleChange} required>
-            <option value="" disabled>
-              Select pot
-            </option>
-            {available.map((p) => (
-              <option key={p.tag} value={p.tag}>
-                {p.tag} ({currency(p.remaining)} left)
-              </option>
-            ))}
-          </select>
-        </label>
+    <form id={id} className="form" onSubmit={handleSubmit}>
+      <label className="amount-field">
+        <span className="field-label">Amount</span>
+        <span className="amount-input">
+          <span className="amount-prefix">₹</span>
+          <input
+            type="number"
+            name="amount"
+            inputMode="decimal"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            value={form.amount}
+            onChange={handleChange}
+            required
+            autoFocus
+          />
+        </span>
+      </label>
 
-        <label>
-          Amount
-          <input type="number" name="amount" min="0.01" step="0.01" value={form.amount} onChange={handleChange} required />
-        </label>
-
-        <label>
-          Date
-          <input type="date" name="date" value={form.date} onChange={handleChange} required />
-        </label>
-
-        <label className="grow">
-          What for? (optional)
-          <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g. Laptop repair" />
-        </label>
+      <div className="field">
+        <span className="field-label">From pot</span>
+        <div className="chip-group" role="radiogroup" aria-label="From pot">
+          {available.map((p) => (
+            <button
+              type="button"
+              key={p.tag}
+              role="radio"
+              aria-checked={form.tag === p.tag}
+              className={`chip ${form.tag === p.tag ? "is-active" : ""}`}
+              onClick={() => setForm((f) => ({ ...f, tag: p.tag }))}
+            >
+              {p.tag} · {currency(p.remaining)}
+            </button>
+          ))}
+        </div>
+        {/* Keeps native "required" validation for the chip choice. */}
+        <input className="visually-hidden" tabIndex={-1} aria-hidden="true" value={form.tag} onChange={() => {}} required />
       </div>
 
-      <div className="field-row actions">
-        <button type="submit">Use savings</button>
+      <div className="field-grid">
+        <label className="field">
+          <span className="field-label">Date</span>
+          <input type="date" name="date" className="input" value={form.date} onChange={handleChange} required />
+        </label>
+        <label className="field">
+          <span className="field-label">What for?</span>
+          <input type="text" name="note" className="input" value={form.note} onChange={handleChange} placeholder="Optional" />
+        </label>
       </div>
     </form>
   );

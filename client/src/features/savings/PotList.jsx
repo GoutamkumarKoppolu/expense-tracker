@@ -1,35 +1,44 @@
+import { PiggyBank } from "lucide-react";
+import EmptyState from "../../components/ui/EmptyState";
+import ProgressRing from "../../components/ui/ProgressRing";
 import { currency } from "../../utils/format";
 
-// One row per savings pot (tag). Clicking a pot filters the history to it.
+// One card per savings pot (tag). Tapping a pot filters the history to it.
 export default function PotList({ pots, selectedTag, onSelect }) {
   if (!pots.length) {
-    return <p className="empty-state">No savings yet. Add a Saving transaction on the Tracker page.</p>;
+    return <EmptyState icon={PiggyBank}>No savings yet. Add a Saving transaction with the + button.</EmptyState>;
   }
 
   return (
-    <table className="summary-table pot-table">
-      <thead>
-        <tr>
-          <th>Pot (tag)</th>
-          <th className="amount-col">Saved</th>
-          <th className="amount-col">Used</th>
-          <th className="amount-col">Remaining</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pots.map((p) => (
-          <tr
+    <div className="pot-list">
+      {pots.map((p) => {
+        const left = p.saved ? p.remaining / p.saved : 0;
+        const active = selectedTag === p.tag;
+        return (
+          <button
+            type="button"
             key={p.tag}
-            className={`pot-row ${selectedTag === p.tag ? "pot-row-active" : ""}`}
-            onClick={() => onSelect(selectedTag === p.tag ? "" : p.tag)}
+            aria-pressed={active}
+            className={`card pot-card ${active ? "is-active" : ""}`}
+            onClick={() => onSelect(active ? "" : p.tag)}
           >
-            <td>{p.tag}</td>
-            <td className="amount-col">{currency(p.saved)}</td>
-            <td className="amount-col">{currency(p.used)}</td>
-            <td className={`amount-col ${p.remaining >= 0 ? "positive" : "negative"}`}>{currency(p.remaining)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            <span className="icon-badge tone-savings">
+              <PiggyBank size={18} />
+            </span>
+            <span className="pot-text">
+              <span className="pot-title">{p.tag}</span>
+              <span className="pot-sub">
+                <strong>{currency(p.remaining)}</strong> left of {currency(p.saved)}
+              </span>
+            </span>
+            <ProgressRing
+              value={left}
+              color={p.remaining < 0 ? "var(--negative)" : "var(--savings)"}
+              label={`${Math.round(left * 100)}%`}
+            />
+          </button>
+        );
+      })}
+    </div>
   );
 }
