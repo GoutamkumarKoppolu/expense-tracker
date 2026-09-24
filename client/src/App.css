@@ -1765,3 +1765,83 @@ button.list-row:active {
 .tag-card-rows .tx-row {
   padding: 10px 12px;
 }
+
+/* ---------- Backup ---------- */
+
+.btn-danger {
+  background: var(--negative);
+  color: var(--on-negative);
+}
+
+.backup-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.backup-card h2 {
+  font-size: 18px;
+}
+
+.backup-card p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.backup-meta {
+  margin: 0;
+}
+
+.backup-counts {
+  padding: 4px 0;
+  box-shadow: none;
+  background: var(--surface-2);
+}
+
+.backup-count-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.backup-count-row + .backup-count-row {
+  border-top: 1px solid var(--border);
+}
+
+.warning-note,
+.success-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.warning-note {
+  background: var(--warning-soft);
+  color: var(--text);
+}
+
+.warning-note svg {
+  flex-shrink: 0;
+  color: var(--warning);
+}
+
+.success-note {
+  background: var(--positive-soft);
+  color: var(--text);
+}
+
+.success-note svg {
+  flex-shrink: 0;
+  color: var(--positive);
+}
+
+.warning-note p,
+.success-note p {
+  margin: 0 0 8px;
+}
+
+.warning-note p:last-child {
+  margin: 0;
+}

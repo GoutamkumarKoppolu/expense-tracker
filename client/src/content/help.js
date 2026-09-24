@@ -27,6 +27,15 @@ export const HELP = {
     ],
     example: "Logged this month: ₹12,400. Statement: ₹13,150. The ₹750 difference is worth a look.",
   },
+  backup: {
+    title: "Why back up",
+    body: [
+      "Your data lives only on this device. Uninstalling the app, clearing its storage or switching phones removes it, and there's no server copy.",
+      "Export saves everything to a single file. Keep it somewhere safe, then use Import on the new install to get it all back.",
+      "Backups from older versions of the app still work: anything new is filled in with sensible defaults, and the file is checked before anything on your device changes.",
+    ],
+    example: "Before a phone reset: More → Backup & restore → Export → save to Drive. After reinstalling: Import → pick that file → Replace my data.",
+  },
   tags: {
     title: "How tags help",
     body: [

@@ -1,4 +1,4 @@
-import { CreditCard, Palette, Settings, ShieldCheck, Tags } from "lucide-react";
+import { CreditCard, DatabaseBackup, Palette, Settings, ShieldCheck, Tags } from "lucide-react";
 import { useTheme } from "../../theme/useTheme";
 import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
@@ -42,6 +42,13 @@ export default function MorePage({ navigate }) {
           />
         </div>
         <div className="card card-list">
+          <ListRow
+            icon={DatabaseBackup}
+            tone="warning"
+            title="Backup & restore"
+            subtitle="Export your data to a file, or import it on a new install"
+            onClick={() => navigate("backup")}
+          />
           <ListRow
             icon={ShieldCheck}
             tone="positive"

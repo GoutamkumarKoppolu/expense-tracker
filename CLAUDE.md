@@ -58,6 +58,8 @@ client/src/
     settings/              Manage options page + More page
     appearance/            Appearance page: background + accent pickers with live preview
     tags/                  Tags page: all transactions by kind → tag → month, all time by default (pure rules in domain.js)
+    backup/                Backup & restore: backupFormat.js (format version, per-table specs, migrations, validation),
+                           api.js (export all tables / restore in one transaction), fileio.js (download vs Android share sheet)
   content/help.js          In-app explanations shown by InfoButton (one entry per topic)
   theme/
     palettes.css           Accent palettes (light + dark variants) and the Black background
@@ -87,7 +89,7 @@ client/src/
 | `savings_withdrawals` (v2) | `id`, `tag` (savings pot), `amount`, `date`, `note`, `created_at` |
 
 Conventions in the data layer:
-- Dates are stored as **strings** (`date` = `"YYYY-MM-DD"`, `created_at` = ISO). Month keys are `date.slice(0, 7)` (`"YYYY-MM"`). Never store `Date` objects.
+- Dates are stored as **strings** (`date` = `"YYYY-MM-DD"`, `created_at` = ISO). Month keys are `date.slice(0, 7)` (`"YYYY-MM"`). Never store `Date` objects. To turn a timestamp into a date, use `localDate()` / `today()` from `utils/format.js`, never `iso.slice(0, 10)`: that gives the UTC date, which is yesterday before 05:30 IST.
 - Transactions reference their type by **name**. `api.js` derives `type_kind` at read time, and all totals are computed from `type_kind`, not the type name.
 - **Balance and savings rules** (in `domain/transactions.js` and `features/savings/domain.js`):
   - Current balance = earnings − expenses − savings that deduct from the balance.
@@ -109,6 +111,7 @@ Conventions in the data layer:
 | Report: Expenses/Income/Savings toggle, donut by tag (top 7 + Other), per-tag share bars, % change vs previous month when one month is selected | `features/report/` |
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
 | Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
+| Backup & restore (More → Backup & restore): export everything (data + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
 | Info buttons (ⓘ) explaining balance deduction, savings, credit cards and tags | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
@@ -156,6 +159,11 @@ Every new feature must be **decoupled** so it can be added, changed, or removed 
 5. **Don't touch unrelated features.** A new feature must not change the behavior, props, or data shape of existing features. If a shared contract (an `api.js` signature, a store shape, a component's props) must change, keep it backward-compatible and update every caller in the same change.
 6. **DRY with shared utilities.** Reusable helpers belong in shared modules: `utils/format.js` for currency and dates, `components/ui/` for UI primitives, and `src/hooks/` for hooks. Don't copy-paste helpers.
 7. **Safe schema evolution.** Add stores and indexes via a new `db.version(n).stores({...})` (with `.upgrade()` for data migrations). Never edit an existing version, never drop user data, and keep old data readable.
+   **Every data change must keep backups working** (`features/backup/backupFormat.js`):
+   - New table → add a spec to `TABLE_SPECS` (older backups just start it empty). Export and import refuse to run if a Dexie table has no spec, so a forgotten table can't be silently wiped.
+   - New field → set it in that table's spec with a default for rows that lack it (like `deduct_from_balance`).
+   - Changed meaning of existing data → bump `BACKUP_FORMAT` and add a `MIGRATIONS` step from the previous format.
+   - Never make import accept a backup from a newer format. Validate every row before writing anything, and restore in a single transaction.
 8. **Keep the offline, no-backend model.** No network calls, no server dependency, no new heavy dependencies without a clear need. Everything must work inside the Android WebView.
 9. **Follow existing conventions.** Use string dates, `type_kind` for totals, errors surfaced via `ErrorBanner`, colors from CSS tokens (support both light and dark), respect the safe-area padding, follow the One UI conventions above, and match the existing JSX/CSS style.
 10. **Verify before finishing.** Run `npm run lint` and `npm run build` in `client/`, then exercise the feature in `npm run dev` at phone width (360–412px) and desktop, in light and dark mode, including regressions on Home, Report, Savings, Credit cards and Manage options. If you add pure logic, add tests for it (introduce Vitest if it isn't set up yet).

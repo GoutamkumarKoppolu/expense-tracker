@@ -33,12 +33,14 @@ export function splitCurrency(n) {
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
-// Local date, not toISOString() (UTC), which returns yesterday before
-// 05:30 in IST.
-export const today = () => {
-  const d = new Date();
+// Local "YYYY-MM-DD" for a Date or ISO timestamp. Never slice an ISO string
+// for this: that's the UTC date, which is yesterday before 05:30 in IST.
+export const localDate = (value = new Date()) => {
+  const d = value instanceof Date ? value : new Date(value);
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 };
+
+export const today = () => localDate();
 
 export const currentMonth = () => today().slice(0, 7);
 
