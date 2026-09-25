@@ -5,7 +5,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import ErrorBanner from "../../components/ui/ErrorBanner";
 import { createEvent, fetchBudgetData } from "./api";
 import { summarizeEvent, summarizeEvents } from "./domain";
-import FormSheet from "./FormSheet";
+import FormSheet from "../../components/ui/FormSheet";
 import BudgetForm from "./BudgetForm";
 import EventCard from "./EventCard";
 import EventPage from "./EventPage";

@@ -2,8 +2,8 @@
 
 A private, offline-first money tracker for Android and the web, designed to be used with one hand.
 Track what you earn, spend and save. It knows *where* your savings came from, checks your card
-statements against what you actually spent, follows a loan or a trip across months, and keeps a
-big event like a wedding or a new car on budget.
+statements against what you actually spent, follows a loan or a trip across months, keeps a
+big event like a wedding or a new car on budget, and keeps your important bills in folders.
 Everything stays on your phone: no account, no server, no ads, no SMS permissions.
 
 <p align="center">
@@ -27,6 +27,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 | **Credit card statements don't say what each charge was for.** | A separate **Credit cards** page where you log spends as you make them. At bill time, compare your logged total with the statement; the difference is what you missed or should question. Card spends never touch your balance, so nothing is counted twice. |
 | **A loan or a trip is spread over many months.** | Use the same **tag** every time ("Car loan", "Goa trip"). The **Tags** page shows every tag across all months with totals, broken down month by month. |
 | **Big events blow past the plan.** A wedding or a new car has many parts, and it's hard to see what's left overall and for each part. | **Budgets**: give an event a total, optionally split it into sub-budgets (Venue, Catering…), and note down each spend. Every spend comes off its sub-budget and the total, you see what's left at a glance, and going over is shown in red instead of blocked. Budgets are a plan, so they never touch your balance. |
+| **Bills get lost when you need them.** The fridge breaks and the invoice is somewhere in a drawer or a chat. | **Bills**: photos and PDFs of bills, warranties and receipts, kept at original quality in folders you name (Warranties, Electricity, Car…). A bill can have several pages, you can search by name, and open or share it straight from the app. Stored on the phone and included in backups. |
 | **Your data is stuck on one phone.** | **Backup & restore** exports everything to one file you can keep on Drive. Import it on a new phone or reinstall. Older backups keep working as the app gains features. |
 | **Finance apps want your SMS, a login and your data on their servers.** | Fully offline. Data lives in the phone's local database (IndexedDB) and nothing is sent anywhere. |
 | **Apps built for two thumbs on a tablet.** | A **One UI-style, one-handed layout**: read-only information at the top, and everything you tap (tabs, the + button, forms, filters) within thumb reach at the bottom. |
@@ -63,13 +64,20 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Overspending is allowed** and shown in red, so the numbers always match reality.
 - **Mark as done** moves a finished event out of the way (you can reopen it). Budgets are a plan only: they never change your balance.
 
+### Bills
+- **Keep important bills** as photos or PDFs, sorted into **folders** you create (one level: a folder holds any number of bills).
+- **Add a bill** by taking a photo or choosing files; several files make one bill with several pages. Files are kept at their original size and nothing inside them is read.
+- **View and share:** photos show in the app; tap a photo or **Open** a PDF to view it in your phone's own viewer (to zoom), or **Share** the whole bill to Drive, WhatsApp or email.
+- **Organise:** rename or move a bill to another folder, add or delete pages, rename or delete folders, and **search** bills across all folders.
+- **Backed up:** bill files are included in the backup file, so they move with you to a new phone.
+
 ### Make it yours
 - **Themes:** background **System / Light / Dark / Black (AMOLED)** × accent **Purple / Blue / Green / Teal / Orange / Pink**. All combinations meet WCAG AA text contrast.
 - **Manage options:** add or remove transaction types, payment methods and payment sources.
-- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, credit cards, tags, budgets and sub-budgets, backups) right where you use them.
+- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills, backups) right where you use them.
 
 ### Your data
-- **Backup & restore:** export everything (data + theme) to a JSON file. On Android this opens the share sheet (save to Drive/Files, or send it to yourself); on the web it downloads.
+- **Backup & restore:** export everything (data, bill files and theme) to a JSON file. Large backups are written in pieces so they don't run the phone out of memory. On Android this opens the share sheet (save to Drive/Files, or send it to yourself); on the web it downloads.
 - **Safe import:** the whole file is checked before anything changes; you see a summary, your data is replaced in a single step (all or nothing), and backups from older app versions are upgraded automatically.
 - **Offline and private:** no network calls during normal use and no account.
 
@@ -92,6 +100,8 @@ Most expense apps give you a single running total and nothing more. Real money i
 <p align="center">
   <img src="docs/screenshots/budgets.png" width="180" alt="Budgets page with three events, one over budget" />
   <img src="docs/screenshots/budget-event.png" width="180" alt="A car budget split into sub-budgets, with what's left and unallocated" />
+  <img src="docs/screenshots/bills.png" width="180" alt="Bills page with folders for Car, Electricity, Medical and Warranties" />
+  <img src="docs/screenshots/bill-folder.png" width="180" alt="Warranties folder with three bills, one with two pages" />
 </p>
 
 ---
@@ -163,7 +173,7 @@ npx cap open android  # open the native project in Android Studio
 | UI | React 19, plain CSS with design tokens (light/dark + 6 accent palettes), [lucide](https://lucide.dev) icons |
 | Build | Vite 8, oxlint, Vitest for unit tests of the pure rules |
 | Storage | IndexedDB via [Dexie](https://dexie.org) 4 (versioned schema, on-device only) |
-| Android | [Capacitor](https://capacitorjs.com) 7, plus the Filesystem and Share plugins for backups and a small native plugin for system bar colours |
+| Android | [Capacitor](https://capacitorjs.com) 7, plus the Filesystem and Share plugins for backups and bills, and two small native plugins: system bar colours and opening a file in the phone's own viewer |
 | CI | GitHub Actions workflow that builds the APK |
 
 ## Project structure
@@ -177,12 +187,13 @@ client/
     domain/              Pure business rules (balance, deduction flag, filters)
     features/
       ledger/            Shared ledger state + transaction form/list
-      home/  report/  savings/  tags/  budgets/  cards/  settings/  appearance/  backup/
+      home/  report/  savings/  tags/  budgets/  bills/  cards/  settings/  appearance/  backup/
     components/ui/       Design-system pieces: bottom sheet, page header, chips, switch, charts…
+    platform/files.js    Getting files out of the app: download/share/open, chunked writes on Android
     theme/               Accent palettes + theme store
     content/help.js      Text for the ⓘ info sheets
     db/                  Dexie schema (versioned), seed data, validators
-  android/               Capacitor Android project (+ SystemBarsPlugin)
+  android/               Capacitor Android project (+ SystemBarsPlugin, FileViewerPlugin)
 docs/screenshots/        Images used in this README
 .github/workflows/       APK build
 server/                  Legacy Express + PostgreSQL API (not used by the app, see below)

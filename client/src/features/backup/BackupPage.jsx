@@ -6,7 +6,7 @@ import ErrorBanner from "../../components/ui/ErrorBanner";
 import { dateHeading, localDate, today } from "../../utils/format";
 import { TABLE_LABELS, parseBackup } from "./backupFormat";
 import { exportBackup, restoreBackup } from "./api";
-import { saveTextFile } from "./fileio";
+import { saveTextFile } from "../../platform/files";
 
 const LAST_EXPORT_KEY = "expense-tracker.lastExport";
 
@@ -19,7 +19,7 @@ function readLastExport() {
 }
 
 // Import confirmation: what's in the file, and a clear "this replaces" warning.
-function ImportSheet({ parsed, busy, error, onExportFirst, onConfirm, onClose }) {
+function ImportSheet({ parsed, busy, exporting, error, onExportFirst, onConfirm, onClose }) {
   const { summary } = parsed;
   return (
     <BottomSheet
@@ -27,8 +27,8 @@ function ImportSheet({ parsed, busy, error, onExportFirst, onConfirm, onClose })
       onClose={onClose}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={onExportFirst} disabled={busy}>
-            Export current first
+          <button type="button" className="btn btn-ghost" onClick={onExportFirst} disabled={busy || exporting}>
+            {exporting ? "Exporting…" : "Export current first"}
           </button>
           <button type="button" className="btn btn-danger btn-block" onClick={onConfirm} disabled={busy}>
             {busy ? "Restoring…" : "Replace my data"}
@@ -68,9 +68,11 @@ export default function BackupPage({ navigate }) {
   const [sheetError, setSheetError] = useState("");
   const [busy, setBusy] = useState(false);
   const [restored, setRestored] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   async function handleExport() {
     try {
+      setExporting(true);
       setError("");
       setSheetError("");
       const backup = await exportBackup();
@@ -86,6 +88,8 @@ export default function BackupPage({ navigate }) {
       }
     } catch (e) {
       (parsed ? setSheetError : setError)(`Export failed: ${e.message}`);
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -148,14 +152,14 @@ export default function BackupPage({ navigate }) {
           </span>
           <h2>Export</h2>
           <p className="muted">
-            Saves all your transactions, savings, credit cards, options and theme to one file. Do this before uninstalling the app
+            Saves all your transactions, savings, budgets, credit cards, bills (with their files), options and theme to one file. Do this before uninstalling the app
             or changing phones, and keep the file somewhere safe (Drive, email to yourself).
           </p>
           <p className="muted backup-meta">
             {lastExport ? `Last exported: ${dateHeading(localDate(lastExport))}` : "You haven't exported a backup on this device yet."}
           </p>
-          <button type="button" className="btn btn-primary btn-block" onClick={handleExport}>
-            <Download size={18} /> Export backup
+          <button type="button" className="btn btn-primary btn-block" onClick={handleExport} disabled={exporting}>
+            <Download size={18} /> {exporting ? "Preparing backup…" : "Export backup"}
           </button>
         </section>
 
@@ -181,6 +185,7 @@ export default function BackupPage({ navigate }) {
           busy={busy}
           error={sheetError}
           onExportFirst={handleExport}
+          exporting={exporting}
           onConfirm={handleRestore}
           onClose={() => {
             setParsed(null);

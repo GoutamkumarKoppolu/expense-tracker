@@ -24,3 +24,12 @@ export const STORES_V3 = {
   budgets: "++id, parent_id, created_at",
   budget_spends: "++id, budget_id, date, created_at",
 };
+
+// Version 4: bill uploads (see features/bills). A bill lives in a folder and
+// has one or more pages; each page holds the original file as a Blob, plus a
+// small preview image for photos.
+export const STORES_V4 = {
+  bill_folders: "++id, name, created_at",
+  bills: "++id, folder_id, created_at",
+  bill_pages: "++id, bill_id",
+};

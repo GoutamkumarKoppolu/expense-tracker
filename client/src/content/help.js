@@ -54,6 +54,16 @@ export const HELP = {
     ],
     example: "Wedding ₹8L: Venue ₹3L, Catering ₹2.5L, Clothes ₹1.5L → ₹1L unallocated. Spend ₹50,000 on catering → Catering ₹2L left, Wedding ₹7.5L left.",
   },
+  bills: {
+    title: "Keeping bills",
+    body: [
+      "Keep photos and PDFs of bills you may need later, like invoices, warranties, receipts or service records, sorted into folders you name.",
+      "Add a bill by taking a photo or choosing files. A bill can have several pages: a two-page invoice stays together as one bill. Files are kept exactly as you added them; nothing inside them is read.",
+      "Tap a photo or Open on a PDF to view it in your phone's own viewer, where you can zoom. Share sends the whole bill to another app.",
+      "Bills are stored only on this device and are included in your backup file, so export a backup before changing phones.",
+    ],
+    example: "Folder \"Warranties\": \"Fridge invoice\" (2 photos) and \"TV warranty card\" (a PDF). When the fridge needs repair, open the folder and show the invoice.",
+  },
   tags: {
     title: "How tags help",
     body: [

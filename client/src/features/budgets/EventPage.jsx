@@ -13,7 +13,7 @@ import {
   updateBudget,
   updateSpend,
 } from "./api";
-import FormSheet from "./FormSheet";
+import FormSheet from "../../components/ui/FormSheet";
 import BudgetForm from "./BudgetForm";
 import SpendForm from "./SpendForm";
 import BudgetSummary from "./BudgetSummary";

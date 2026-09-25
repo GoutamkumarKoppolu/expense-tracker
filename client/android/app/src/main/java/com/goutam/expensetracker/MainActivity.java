@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Local plugins must be registered before super.onCreate().
         registerPlugin(SystemBarsPlugin.class);
+        registerPlugin(FileViewerPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

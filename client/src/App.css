@@ -1951,3 +1951,165 @@ button.list-row:active {
   align-items: center;
   gap: 2px;
 }
+
+/* ---------- Bills ---------- */
+
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.file-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 8px 12px;
+  border: 0;
+  color: inherit;
+  text-align: left;
+}
+
+.file-tile:active {
+  background: var(--surface-2);
+}
+
+.file-tile-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.file-tile-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-tile-badge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.file-tile-name {
+  overflow: hidden;
+  padding: 0 4px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-tile-meta {
+  overflow: hidden;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-list {
+  margin-bottom: 10px;
+  box-shadow: none;
+  background: var(--surface-2);
+}
+
+.upload-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 12px;
+}
+
+.upload-row + .upload-row {
+  border-top: 1px solid var(--border);
+}
+
+.upload-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.upload-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-meta {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.page-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bill-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 10px;
+}
+
+.bill-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding-left: 8px;
+}
+
+.bill-page-title {
+  font-weight: 650;
+}
+
+.bill-page-image {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.bill-page-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bill-page-pdf {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 4px 4px 8px;
+}
+
+.bill-page-pdf-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

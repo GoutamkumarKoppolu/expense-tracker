@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
-import BottomSheet from "../../components/ui/BottomSheet";
-import ErrorBanner from "../../components/ui/ErrorBanner";
+import BottomSheet from "./BottomSheet";
+import ErrorBanner from "./ErrorBanner";
 
 // Bottom sheet around one form: submit in the footer, plus Delete when
 // editing (`onDelete` set). The form inside must use `id={formId}`.

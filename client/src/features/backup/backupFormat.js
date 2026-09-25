@@ -57,6 +57,15 @@ const date = (v) => {
 const createdAt = (v, fallbackDate) =>
   typeof v === "string" && !Number.isNaN(Date.parse(v)) ? v : `${fallbackDate || "1970-01-01"}T00:00:00.000Z`;
 
+// Files are stored in the backup as { $blob: base64, type } (see api.js).
+const blob = (v, field) => {
+  need(v && typeof v === "object" && typeof v.$blob === "string" && v.$blob.length > 0, `${field} has no file data`);
+  need(/^[A-Za-z0-9+/]+=*$/.test(v.$blob.slice(0, 64)), `${field} isn't valid file data`);
+  return { $blob: v.$blob, type: typeof v.type === "string" ? v.type : "" };
+};
+
+const optionalBlob = (v, field) => (v === undefined || v === null ? null : blob(v, field));
+
 // ---------- per-table specs, in import order (parents before children) ----------
 // Each takes a raw row plus a context of already-normalized tables and
 // returns the clean row to store.
@@ -141,10 +150,35 @@ export const TABLE_SPECS = {
       created_at: createdAt(r.created_at, d),
     };
   },
+  // Added in database v4. Folders → bills → pages; each page is one file.
+  bill_folders: (r) => ({ id: id(r.id), name: required(r.name, "name"), created_at: createdAt(r.created_at) }),
+  bills: (r, ctx) => {
+    const folderId = id(r.folder_id, "folder_id");
+    need(ctx.billFolderIds.has(folderId), `folder ${folderId} isn't in this backup`);
+    return { id: id(r.id), folder_id: folderId, name: required(r.name, "name"), created_at: createdAt(r.created_at) };
+  },
+  bill_pages: (r, ctx) => {
+    const billId = id(r.bill_id, "bill_id");
+    need(ctx.billIds.has(billId), `bill ${billId} isn't in this backup`);
+    const position = Number(r.position);
+    need(Number.isInteger(position) && position >= 0, "position must be a whole number");
+    const data = blob(r.data, "page");
+    return {
+      id: id(r.id),
+      bill_id: billId,
+      position,
+      name: required(r.name, "name"),
+      type: required(r.type || data.type, "type"),
+      size: Number.isFinite(Number(r.size)) && Number(r.size) >= 0 ? Number(r.size) : 0,
+      data,
+      thumb: optionalBlob(r.thumb, "preview"),
+      created_at: createdAt(r.created_at),
+    };
+  },
 };
 
 // Tables whose `name` must be unique (they have a unique index).
-const UNIQUE_NAME_TABLES = ["transaction_types", "payment_methods", "payment_sources"];
+const UNIQUE_NAME_TABLES = ["transaction_types", "payment_methods", "payment_sources", "bill_folders"];
 
 export const TABLE_LABELS = {
   transaction_types: "Transaction types",
@@ -156,6 +190,9 @@ export const TABLE_LABELS = {
   savings_withdrawals: "Savings used",
   budgets: "Budgets",
   budget_spends: "Budget spends",
+  bill_folders: "Bill folders",
+  bills: "Bills",
+  bill_pages: "Bill pages",
 };
 
 // Sub-budgets are one level deep: every parent_id must be an event (a row
@@ -203,7 +240,7 @@ export function parseBackup(fileText) {
 
   const problems = [];
   const tables = {};
-  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set() };
+  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set(), billFolderIds: new Set(), billIds: new Set() };
   const missingTables = [];
 
   for (const [name, spec] of Object.entries(TABLE_SPECS)) {
@@ -247,6 +284,8 @@ export function parseBackup(fileText) {
       problems.push(...checkBudgetParents(rows));
       rows.forEach((b) => ctx.budgetIds.add(b.id));
     }
+    if (name === "bill_folders") rows.forEach((f) => ctx.billFolderIds.add(f.id));
+    if (name === "bills") rows.forEach((b) => ctx.billIds.add(b.id));
   }
 
   if (problems.length) {

@@ -27,7 +27,7 @@ No `.env`, database, or server is needed. To reset local data, delete the `expen
 **Android:**
 - CI: GitHub → Actions → "Build Android APK" → Run workflow (manual `workflow_dispatch`, [.github/workflows/android-build.yml](.github/workflows/android-build.yml)). Download the `app-debug-apk` artifact. It uses Node 20 and JDK 21, and the build is an unsigned debug build.
 - Local (needs Android Studio): `cd client && npm run cap:sync && npx cap open android`.
-- `client/android/` is Capacitor-generated. Commit it as-is and avoid hand-editing it unless a native change is really required.
+- `client/android/` is Capacitor-generated. Commit it as-is and avoid hand-editing it unless a native change is really required. The local plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are registered in `MainActivity`. `FileViewerPlugin` opens a file from the cache folder with `ACTION_VIEW` through the existing FileProvider (`res/xml/file_paths.xml`); JS falls back to the share sheet if it fails.
 - **Status bar / navigation bar (Android 15+ edge-to-edge):** `capacitor.config.json` sets `android.adjustMarginsForEdgeToEdge: "auto"`, so Android insets the WebView below the status bar and above the nav bar natively (don't rely on `env(safe-area-inset-*)`, which older Android WebViews report as 0). The strips behind the bars are coloured by the local `SystemBarsPlugin.java` (registered in `MainActivity`), driven from `app/useSystemBars.js`: hero colour on pages with `hero: true` in `ROUTES`, page background elsewhere, bottom nav colour at the bottom, with icons light/dark to stay readable. Keep the CSS `env(safe-area-inset-*)` padding too, for iOS and browsers.
 
 **Legacy server (optional, not used by the app):** see README. `cd server && cp .env.example .env && npm install && npm start` against a Postgres DB created from `server/schema.sql`.
@@ -47,7 +47,8 @@ client/src/
   components/
     ui/                    Design-system primitives: BottomSheet, PageHeader (collapsing large title),
                            SegmentedControl, ChipGroup, Switch, StatCard, ProgressRing, DonutChart,
-                           Money, ListRow, EmptyState, ErrorBanner, InfoButton (ⓘ → help sheet)
+                           Money, ListRow, EmptyState, ErrorBanner, InfoButton (ⓘ → help sheet),
+                           FormSheet (a form in a sheet: submit + optional Delete), BlobImage (<img> for a stored Blob)
     MonthPicker.jsx        Years × months chip picker ("YYYY-MM"[] contract)
     PeriodSheet.jsx        MonthPicker in a bottom sheet
   features/
@@ -61,8 +62,12 @@ client/src/
     tags/                  Tags page: all transactions by kind → tag → month, all time by default (pure rules in domain.js)
     budgets/               Budgets for events: optional one-level sub-budgets, spends, mark as done; not linked to the balance
                            (pure rules in domain.js; list at #/budgets, one event at #/budgets/<id>)
+    bills/                 Bills: folders of uploaded photos/PDFs, a bill = one or more pages (#/bills, #/bills/<folder>,
+                           #/bills/<folder>/<bill>); files stored as Blobs with a small preview; thumbnail.js makes previews
     backup/                Backup & restore: backupFormat.js (format version, per-table specs, migrations, validation),
-                           api.js (export all tables / restore in one transaction), fileio.js (download vs Android share sheet)
+                           api.js (export all tables / restore in one transaction; Blobs ⇄ { $blob: base64, type })
+  platform/files.js        Getting files out of the app: download / share sheet / open in the phone's viewer
+                           (FileViewerPlugin.java), with chunked writes on Android so large files don't exhaust memory
   content/help.js          In-app explanations shown by InfoButton (one entry per topic)
   theme/
     palettes.css           Accent palettes (light + dark variants) and the Black background
@@ -70,7 +75,7 @@ client/src/
     themeStore.js          Saves the choice in localStorage; sets data-theme / data-accent / data-bg on <html>
     useTheme.js            React hook over the store
   db/
-    schema.js              Dexie store definitions (STORES = v1, STORES_V2 = v2 additions)
+    schema.js              Dexie store definitions (STORES = v1, then STORES_V2..V4 with each version's additions)
     index.js               Dexie instance, versioning, populate -> seed, storage.persist()
     seed.js                Default transaction types / payment methods / payment sources
     validators.js          Pure validation helpers (throw Error with user-facing messages)
@@ -92,6 +97,9 @@ client/src/
 | `savings_withdrawals` (v2) | `id`, `tag` (savings pot), `amount`, `date`, `note`, `created_at` |
 | `budgets` (v3) | `id`, `parent_id` (`null` = event, else the event it belongs to; one level only), `name`, `amount`, `done` (events), `created_at` |
 | `budget_spends` (v3) | `id`, `budget_id` (the event or one of its sub-budgets), `amount`, `description`, `date`, `created_at` |
+| `bill_folders` (v4) | `id`, `name` (unique, case-insensitive, checked in `api.js`), `created_at` |
+| `bills` (v4) | `id`, `folder_id`, `name`, `created_at` |
+| `bill_pages` (v4) | `id`, `bill_id`, `position`, `name` (original file name), `type` (MIME), `size`, `data` (Blob, the original file), `thumb` (small JPEG Blob for photos, else `null`), `created_at` |
 
 Conventions in the data layer:
 - Dates are stored as **strings** (`date` = `"YYYY-MM-DD"`, `created_at` = ISO). Month keys are `date.slice(0, 7)` (`"YYYY-MM"`). Never store `Date` objects. To turn a timestamp into a date, use `localDate()` / `today()` from `utils/format.js`, never `iso.slice(0, 10)`: that gives the UTC date, which is yesterday before 05:30 IST.
@@ -103,6 +111,7 @@ Conventions in the data layer:
   - A pot can never go below zero: withdrawals are capped at the pot's remaining amount, and editing/deleting a Saving transaction that would push its pot negative is blocked.
 - **Cross-feature hooks:** core `api.js` exposes `registerTransactionGuard(fn)` so a feature can veto ledger edits/deletes without the core importing the feature. Each feature wires itself up in its `features/<name>/index.js` entry point, and App imports the feature only from there.
 - There are no foreign keys in IndexedDB, so cascades are done manually inside a Dexie transaction (see `deleteCreditCard` in `features/cards/api.js`).
+- Files are stored as `Blob`s. Never `await` non-Dexie work (reading a file, making a preview, base64) inside a Dexie transaction: IndexedDB closes the transaction. Prepare it first, then write (see `createBill` in `features/bills/api.js`, `exportBackup`/`restoreBackup` in `features/backup/api.js`).
 - Option CRUD is generic over the `OPTION_KINDS` / `TABLE_BY_KIND` maps in `api.js`.
 
 ## Features / components
@@ -117,8 +126,9 @@ Conventions in the data layer:
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
 | Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
 | Budgets (More → Budgets): events with a total, optional sub-budgets (one level, "Unallocated" / over-allocated shown), spends from a sub-budget or the whole budget, overspending shown in red, Mark as done / Reopen; never touches the balance | `features/budgets/` |
+| Bills (More → Bills): folders (one level) of bills; add a bill by camera or file picker (photos/PDFs, originals kept, ≤ 50 MB each), several files = one bill with pages; view photos in-app, Open in the phone's viewer, Share; rename/move bills, add/delete pages, rename/delete folders; search; included in backups | `features/bills/`, `platform/files.js`, `FileViewerPlugin.java` |
 | Backup & restore (More → Backup & restore): export everything (data + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
-| Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets | `components/ui/InfoButton.jsx`, `content/help.js` |
+| Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
 | Themes: background (System / Light / Dark / Black AMOLED) × accent (Purple, Blue, Green, Teal, Orange, Pink), saved per device, applied instantly | `theme/`, `features/appearance/`, More → Appearance |
@@ -152,7 +162,7 @@ Conventions in the data layer:
 - Filtering loads whole tables and filters in memory. That's fine at personal scale, but use Dexie indexes if data grows.
 - Schema changes need a **new `db.version(n)`**, not an edit to an existing version. Editing one breaks existing installs, including users' phones.
 - Savings pots are keyed by tag name, and withdrawals store the tag string, so renames rely on the savings guard.
-- Unit tests cover only pure rules (budgets domain, backup format). UI checks are done manually or with a throwaway Playwright script.
+- Unit tests cover only pure rules (budgets and bills domain, backup format). Native plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are only compiled by the Android CI build, so check that build after touching them. UI checks are done manually or with a throwaway Playwright script.
 
 ## Rules for building new features
 

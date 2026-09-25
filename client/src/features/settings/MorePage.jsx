@@ -1,4 +1,4 @@
-import { CreditCard, DatabaseBackup, Palette, Settings, ShieldCheck, Tags, Wallet } from "lucide-react";
+import { CreditCard, DatabaseBackup, Palette, ReceiptText, Settings, ShieldCheck, Tags, Wallet } from "lucide-react";
 import { useTheme } from "../../theme/useTheme";
 import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
@@ -25,6 +25,13 @@ export default function MorePage({ navigate }) {
             title="Budgets"
             subtitle="Plan an event: a total, sub-budgets and what you spend"
             onClick={() => navigate("budgets")}
+          />
+          <ListRow
+            icon={ReceiptText}
+            tone="savings"
+            title="Bills"
+            subtitle="Photos and PDFs of bills, kept in folders"
+            onClick={() => navigate("bills")}
           />
           <ListRow
             icon={CreditCard}

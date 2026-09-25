@@ -15,6 +15,7 @@ import AppearancePage from "./features/appearance/AppearancePage";
 import TagsPage from "./features/tags/TagsPage";
 import BackupPage from "./features/backup/BackupPage";
 import { BudgetsPage } from "./features/budgets";
+import { BillsPage } from "./features/bills";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
@@ -31,6 +32,7 @@ const ROUTES = {
   appearance: { page: AppearancePage, tab: "more" },
   backup: { page: BackupPage, tab: "more" },
   budgets: { page: BudgetsPage, tab: "more" },
+  bills: { page: BillsPage, tab: "more" },
 };
 
 const TABS = [

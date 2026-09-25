@@ -38,3 +38,59 @@ describe("parseBackup: budgets", () => {
     expect(() => parseBackup(backupWith({ budgets: [{ ...event, amount: 0 }] }))).toThrow(/amount must be a positive number/);
   });
 });
+
+describe("parseBackup: bills", () => {
+  const folder = { id: 1, name: "Warranties", created_at: "2026-09-01T10:00:00.000Z" };
+  const bill = { id: 5, folder_id: 1, name: "Fridge invoice", created_at: "2026-09-02T10:00:00.000Z" };
+  const page = {
+    id: 9,
+    bill_id: 5,
+    position: 0,
+    name: "invoice.pdf",
+    type: "application/pdf",
+    size: 3,
+    data: { $blob: "JVBE", type: "application/pdf" },
+    thumb: null,
+    created_at: "2026-09-02T10:00:00.000Z",
+  };
+
+  it("imports folders, bills and pages with their file data", () => {
+    const { tables } = parseBackup(backupWith({ bill_folders: [folder], bills: [bill], bill_pages: [page] }));
+    expect(tables.bill_folders).toEqual([folder]);
+    expect(tables.bills).toEqual([bill]);
+    expect(tables.bill_pages).toEqual([page]);
+  });
+
+  it("keeps a photo's preview", () => {
+    const photo = { ...page, type: "image/jpeg", thumb: { $blob: "/9j/", type: "image/jpeg" } };
+    const { tables } = parseBackup(backupWith({ bill_folders: [folder], bills: [bill], bill_pages: [photo] }));
+    expect(tables.bill_pages[0].thumb).toEqual({ $blob: "/9j/", type: "image/jpeg" });
+  });
+
+  it("starts bills empty for a backup made before they existed", () => {
+    const { tables } = parseBackup(backupWith({ transactions: [] }));
+    expect(tables.bill_folders).toEqual([]);
+    expect(tables.bills).toEqual([]);
+    expect(tables.bill_pages).toEqual([]);
+  });
+
+  it("rejects a page without file data", () => {
+    const broken = { ...page, data: null };
+    expect(() => parseBackup(backupWith({ bill_folders: [folder], bills: [bill], bill_pages: [broken] }))).toThrow(/page has no file data/);
+  });
+
+  it("rejects file data that isn't base64", () => {
+    const broken = { ...page, data: { $blob: "not base64!", type: "application/pdf" } };
+    expect(() => parseBackup(backupWith({ bill_folders: [folder], bills: [bill], bill_pages: [broken] }))).toThrow(/isn't valid file data/);
+  });
+
+  it("rejects bills and pages pointing at missing parents", () => {
+    expect(() => parseBackup(backupWith({ bills: [bill] }))).toThrow(/folder 1 isn't in this backup/);
+    expect(() => parseBackup(backupWith({ bill_folders: [folder], bill_pages: [page] }))).toThrow(/bill 5 isn't in this backup/);
+  });
+
+  it("rejects two folders with the same name", () => {
+    const twin = { ...folder, id: 2, name: "warranties" };
+    expect(() => parseBackup(backupWith({ bill_folders: [folder, twin] }))).toThrow(/duplicate name/);
+  });
+});
