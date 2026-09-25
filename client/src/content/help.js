@@ -36,6 +36,24 @@ export const HELP = {
     ],
     example: "Before a phone reset: More → Backup & restore → Export → save to Drive. After reinstalling: Import → pick that file → Replace my data.",
   },
+  budgets: {
+    title: "How budgets work",
+    body: [
+      "Make a budget for something you're planning, like a wedding, a function or a new car, and note down each amount you spend on it. You always see how much is left.",
+      "You can split the total into sub-budgets. A spend can come from a sub-budget or straight from the whole budget; either way it's taken off the total. Going over is allowed: the amount left just turns red.",
+      "Budgets are only a plan. They don't change your current balance, so log real expenses on Home as usual. When it's over, tap Mark as done to move it out of the way.",
+    ],
+    example: "Car: ₹10L, split into Purchase ₹5L, Modifications ₹3L and Repair ₹1L (₹1L unallocated). Spend ₹40,000 on modifications → Modifications ₹2.6L left, Car ₹9.6L left.",
+  },
+  subBudgets: {
+    title: "Sub-budgets",
+    body: [
+      "Sub-budgets split a budget into parts, so you can see how each part is going. They're optional.",
+      "Each sub-budget has its own amount. Spending from one reduces that sub-budget and the whole budget. \"Unallocated\" is the part of the total you haven't given to any sub-budget yet. If the sub-budgets add up to more than the total, it shows how much you've over-allocated.",
+      "Tap a sub-budget to see only its spends, and to edit or delete it.",
+    ],
+    example: "Wedding ₹8L: Venue ₹3L, Catering ₹2.5L, Clothes ₹1.5L → ₹1L unallocated. Spend ₹50,000 on catering → Catering ₹2L left, Wedding ₹7.5L left.",
+  },
   tags: {
     title: "How tags help",
     body: [

@@ -14,6 +14,7 @@ import MorePage from "./features/settings/MorePage";
 import AppearancePage from "./features/appearance/AppearancePage";
 import TagsPage from "./features/tags/TagsPage";
 import BackupPage from "./features/backup/BackupPage";
+import { BudgetsPage } from "./features/budgets";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
@@ -29,6 +30,7 @@ const ROUTES = {
   settings: { page: SettingsPage, tab: "more" },
   appearance: { page: AppearancePage, tab: "more" },
   backup: { page: BackupPage, tab: "more" },
+  budgets: { page: BudgetsPage, tab: "more" },
 };
 
 const TABS = [
@@ -39,7 +41,7 @@ const TABS = [
 ];
 
 export default function App() {
-  const [route, navigate] = useHashRoute(ROUTES, "home");
+  const [route, navigate, param] = useHashRoute(ROUTES, "home");
   // null = closed, { transaction: null } = add, { transaction } = edit
   const [sheet, setSheet] = useState(null);
   const { page: Page, tab, add, hero = false } = ROUTES[route];
@@ -49,7 +51,7 @@ export default function App() {
     <LedgerProvider>
       <div className="app">
         <main className="app-main">
-          <Page navigate={navigate} onOpenTransaction={(transaction) => setSheet({ transaction })} />
+          <Page navigate={navigate} param={param} onOpenTransaction={(transaction) => setSheet({ transaction })} />
         </main>
         <BottomNav
           tabs={TABS}

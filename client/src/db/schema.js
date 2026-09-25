@@ -16,3 +16,11 @@ export const STORES = {
 export const STORES_V2 = {
   savings_withdrawals: "++id, tag, date, created_at",
 };
+
+// Version 3: event budgets (see features/budgets). A row with parent_id null
+// is an event; a row with parent_id set is one of its sub-budgets (one level
+// only). Spends point at either.
+export const STORES_V3 = {
+  budgets: "++id, parent_id, created_at",
+  budget_spends: "++id, budget_id, date, created_at",
+};

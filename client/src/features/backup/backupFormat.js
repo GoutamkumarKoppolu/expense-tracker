@@ -118,6 +118,29 @@ export const TABLE_SPECS = {
       created_at: createdAt(r.created_at, d),
     };
   },
+  // Added in database v3. parent_id null = an event; otherwise a sub-budget of
+  // that event (checked once the whole table is read, see checkBudgetParents).
+  budgets: (r) => ({
+    id: id(r.id),
+    parent_id: r.parent_id === undefined || r.parent_id === null ? null : id(r.parent_id, "parent_id"),
+    name: required(r.name, "name"),
+    amount: amount(r.amount),
+    done: r.done === true,
+    created_at: createdAt(r.created_at),
+  }),
+  budget_spends: (r, ctx) => {
+    const budgetId = id(r.budget_id, "budget_id");
+    need(ctx.budgetIds.has(budgetId), `budget ${budgetId} isn't in this backup`);
+    const d = date(r.date);
+    return {
+      id: id(r.id),
+      budget_id: budgetId,
+      amount: amount(r.amount),
+      description: required(r.description, "description"),
+      date: d,
+      created_at: createdAt(r.created_at, d),
+    };
+  },
 };
 
 // Tables whose `name` must be unique (they have a unique index).
@@ -131,7 +154,18 @@ export const TABLE_LABELS = {
   credit_cards: "Credit cards",
   credit_card_transactions: "Card spends",
   savings_withdrawals: "Savings used",
+  budgets: "Budgets",
+  budget_spends: "Budget spends",
 };
+
+// Sub-budgets are one level deep: every parent_id must be an event (a row
+// whose own parent_id is null) in the same backup.
+function checkBudgetParents(rows) {
+  const events = new Set(rows.filter((b) => b.parent_id === null).map((b) => b.id));
+  return rows
+    .filter((b) => b.parent_id !== null && !events.has(b.parent_id))
+    .map((b) => `${TABLE_LABELS.budgets} "${b.name}": its parent ${b.parent_id} isn't a budget in this backup`);
+}
 
 // ---------- build ----------
 
@@ -169,7 +203,7 @@ export function parseBackup(fileText) {
 
   const problems = [];
   const tables = {};
-  const ctx = { kindByType: {}, cardIds: new Set() };
+  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set() };
   const missingTables = [];
 
   for (const [name, spec] of Object.entries(TABLE_SPECS)) {
@@ -209,6 +243,10 @@ export function parseBackup(fileText) {
 
     if (name === "transaction_types") rows.forEach((t) => (ctx.kindByType[t.name] = t.kind));
     if (name === "credit_cards") rows.forEach((c) => ctx.cardIds.add(c.id));
+    if (name === "budgets") {
+      problems.push(...checkBudgetParents(rows));
+      rows.forEach((b) => ctx.budgetIds.add(b.id));
+    }
   }
 
   if (problems.length) {

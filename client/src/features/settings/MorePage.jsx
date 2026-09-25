@@ -1,4 +1,4 @@
-import { CreditCard, DatabaseBackup, Palette, Settings, ShieldCheck, Tags } from "lucide-react";
+import { CreditCard, DatabaseBackup, Palette, Settings, ShieldCheck, Tags, Wallet } from "lucide-react";
 import { useTheme } from "../../theme/useTheme";
 import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
@@ -19,6 +19,12 @@ export default function MorePage({ navigate }) {
             title="Tags"
             subtitle="Every tag across months, e.g. a trip or a loan"
             onClick={() => navigate("tags")}
+          />
+          <ListRow
+            icon={Wallet}
+            title="Budgets"
+            subtitle="Plan an event: a total, sub-budgets and what you spend"
+            onClick={() => navigate("budgets")}
           />
           <ListRow
             icon={CreditCard}

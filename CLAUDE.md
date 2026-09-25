@@ -6,7 +6,7 @@ Guidance for Claude Code when working in this repository.
 
 A personal expense tracker that runs **fully offline, on-device**. It's a React (Vite) single-page app that stores everything in IndexedDB via Dexie, and it's also packaged as an Android app with Capacitor. There is **no backend in use**. `server/` is a legacy Express + Postgres API kept only for reference. Don't add features to it or make the client depend on it.
 
-Stack: React 19, Vite 8, Dexie 4, Capacitor 7 (Android), oxlint. Plain JavaScript/JSX (no TypeScript), plain CSS (no UI framework, no router, no state library). There is no test suite yet.
+Stack: React 19, Vite 8, Dexie 4, Capacitor 7 (Android), oxlint. Plain JavaScript/JSX (no TypeScript), plain CSS (no UI framework, no router, no state library). Unit tests use Vitest and cover the pure rules (`*.test.js` next to the code).
 
 ## Running locally
 
@@ -17,6 +17,7 @@ cd client
 npm install
 npm run dev        # http://localhost:5173 (creates and seeds the IndexedDB "expense-tracker" DB on first load)
 npm run lint       # oxlint
+npm test           # Vitest unit tests
 npm run build      # production build -> client/dist
 npm run preview    # serve the production build
 ```
@@ -38,7 +39,7 @@ client/src/
   main.jsx                 React root
   App.jsx                  Shell only: ROUTES page registry, bottom nav, global add/edit transaction sheet
   app/
-    useHashRoute.js        Hash router (#/savings). Real history entries, so the Android back button works
+    useHashRoute.js        Hash router (#/savings, #/budgets/12 → route + `param` prop). Real history entries, so the Android back button works
     BottomNav.jsx          One UI bottom tabs with the raised centre + button
   api.js                   Core ledger data access: transactions, options, overview, registerTransactionGuard
   domain/transactions.js   Pure ledger rules: kinds, balance-deduction flag, computeTotals, matchesFilters
@@ -58,6 +59,8 @@ client/src/
     settings/              Manage options page + More page
     appearance/            Appearance page: background + accent pickers with live preview
     tags/                  Tags page: all transactions by kind → tag → month, all time by default (pure rules in domain.js)
+    budgets/               Budgets for events: optional one-level sub-budgets, spends, mark as done; not linked to the balance
+                           (pure rules in domain.js; list at #/budgets, one event at #/budgets/<id>)
     backup/                Backup & restore: backupFormat.js (format version, per-table specs, migrations, validation),
                            api.js (export all tables / restore in one transaction), fileio.js (download vs Android share sheet)
   content/help.js          In-app explanations shown by InfoButton (one entry per topic)
@@ -87,6 +90,8 @@ client/src/
 | `credit_cards` | `id`, `name`, `last4`, `created_at` |
 | `credit_card_transactions` | `id`, `card_id`, `amount`, `description`, `date`, `created_at` |
 | `savings_withdrawals` (v2) | `id`, `tag` (savings pot), `amount`, `date`, `note`, `created_at` |
+| `budgets` (v3) | `id`, `parent_id` (`null` = event, else the event it belongs to; one level only), `name`, `amount`, `done` (events), `created_at` |
+| `budget_spends` (v3) | `id`, `budget_id` (the event or one of its sub-budgets), `amount`, `description`, `date`, `created_at` |
 
 Conventions in the data layer:
 - Dates are stored as **strings** (`date` = `"YYYY-MM-DD"`, `created_at` = ISO). Month keys are `date.slice(0, 7)` (`"YYYY-MM"`). Never store `Date` objects. To turn a timestamp into a date, use `localDate()` / `today()` from `utils/format.js`, never `iso.slice(0, 10)`: that gives the UTC date, which is yesterday before 05:30 IST.
@@ -111,8 +116,9 @@ Conventions in the data layer:
 | Report: Expenses/Income/Savings toggle, donut by tag (top 7 + Other), per-tag share bars, % change vs previous month when one month is selected | `features/report/` |
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
 | Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
+| Budgets (More → Budgets): events with a total, optional sub-budgets (one level, "Unallocated" / over-allocated shown), spends from a sub-budget or the whole budget, overspending shown in red, Mark as done / Reopen; never touches the balance | `features/budgets/` |
 | Backup & restore (More → Backup & restore): export everything (data + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
-| Info buttons (ⓘ) explaining balance deduction, savings, credit cards and tags | `components/ui/InfoButton.jsx`, `content/help.js` |
+| Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
 | Themes: background (System / Light / Dark / Black AMOLED) × accent (Purple, Blue, Green, Teal, Orange, Pink), saved per device, applied instantly | `theme/`, `features/appearance/`, More → Appearance |
@@ -146,7 +152,7 @@ Conventions in the data layer:
 - Filtering loads whole tables and filters in memory. That's fine at personal scale, but use Dexie indexes if data grows.
 - Schema changes need a **new `db.version(n)`**, not an edit to an existing version. Editing one breaks existing installs, including users' phones.
 - Savings pots are keyed by tag name, and withdrawals store the tag string, so renames rely on the savings guard.
-- No automated tests yet. Browser checks are done manually or with a throwaway Playwright script.
+- Unit tests cover only pure rules (budgets domain, backup format). UI checks are done manually or with a throwaway Playwright script.
 
 ## Rules for building new features
 
@@ -166,4 +172,4 @@ Every new feature must be **decoupled** so it can be added, changed, or removed 
    - Never make import accept a backup from a newer format. Validate every row before writing anything, and restore in a single transaction.
 8. **Keep the offline, no-backend model.** No network calls, no server dependency, no new heavy dependencies without a clear need. Everything must work inside the Android WebView.
 9. **Follow existing conventions.** Use string dates, `type_kind` for totals, errors surfaced via `ErrorBanner`, colors from CSS tokens (support both light and dark), respect the safe-area padding, follow the One UI conventions above, and match the existing JSX/CSS style.
-10. **Verify before finishing.** Run `npm run lint` and `npm run build` in `client/`, then exercise the feature in `npm run dev` at phone width (360–412px) and desktop, in light and dark mode, including regressions on Home, Report, Savings, Credit cards and Manage options. If you add pure logic, add tests for it (introduce Vitest if it isn't set up yet).
+10. **Verify before finishing.** Run `npm run lint` and `npm run build` in `client/`, then exercise the feature in `npm run dev` at phone width (360–412px) and desktop, in light and dark mode, including regressions on Home, Report, Savings, Credit cards and Manage options. If you add pure logic, add Vitest tests for it and run `npm test`.
