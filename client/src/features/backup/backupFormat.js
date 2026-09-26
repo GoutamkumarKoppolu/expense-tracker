@@ -206,6 +206,61 @@ export const TABLE_SPECS = {
       created_at: createdAt(r.created_at, d),
     };
   },
+  // Added in database v6. Recurring payments, and one run per payment per
+  // month linking it to the transaction it added (which may since have been
+  // deleted, so transaction_id isn't checked).
+  recurring_payments: (r) => {
+    const kind = text(r.kind);
+    need(["expense", "saving"].includes(kind), "kind must be expense or saving");
+    const day = Number(r.day);
+    need(Number.isInteger(day) && day >= 1 && day <= 31, "day must be between 1 and 31");
+    const startMonth = text(r.start_month);
+    need(/^\d{4}-\d{2}$/.test(startMonth), "start_month must be YYYY-MM");
+    const nonNegative = (v, field) => {
+      if (v === undefined || v === null || v === "") return null;
+      const n = Number(v);
+      need(Number.isFinite(n) && n >= 0, `${field} can't be negative`);
+      return n;
+    };
+    const duration = nonNegative(r.duration, "duration");
+    need(duration == null || Number.isInteger(duration), "duration must be a whole number");
+    const skipped = Array.isArray(r.skipped_months) ? r.skipped_months.map(text) : [];
+    need(skipped.every((m) => /^\d{4}-\d{2}$/.test(m)), "skipped months must be YYYY-MM");
+    return {
+      id: id(r.id),
+      name: required(r.name, "name"),
+      kind,
+      amount: amount(r.amount),
+      tag: required(r.tag, "tag"),
+      day,
+      payment_method: optional(r.payment_method),
+      payment_source: optional(r.payment_source),
+      deduct_from_balance: kind === "saving" ? r.deduct_from_balance !== false : null,
+      pending_start: nonNegative(r.pending_start, "pending balance"),
+      duration,
+      start_month: startMonth,
+      paused: r.paused === true,
+      completed: r.completed === true,
+      skipped_months: skipped,
+      created_at: createdAt(r.created_at),
+    };
+  },
+  recurring_runs: (r, ctx) => {
+    const recurringId = id(r.recurring_id, "recurring_id");
+    need(ctx.recurringIds.has(recurringId), `recurring payment ${recurringId} isn't in this backup`);
+    const month = text(r.month);
+    need(/^\d{4}-\d{2}$/.test(month), "month must be YYYY-MM");
+    const key = `${recurringId}:${month}`;
+    need(!ctx.recurringRunKeys.has(key), `month ${month} appears twice for recurring payment ${recurringId}`);
+    ctx.recurringRunKeys.add(key);
+    return {
+      id: id(r.id),
+      recurring_id: recurringId,
+      month,
+      transaction_id: id(r.transaction_id, "transaction_id"),
+      created_at: createdAt(r.created_at),
+    };
+  },
 };
 
 // Tables whose `name` must be unique (they have a unique index).
@@ -226,6 +281,8 @@ export const TABLE_LABELS = {
   bill_pages: "Bill pages",
   borrow_records: "Borrowed & lent",
   borrow_payments: "Borrowed & lent payments",
+  recurring_payments: "Recurring payments",
+  recurring_runs: "Recurring payment history",
 };
 
 // Sub-budgets are one level deep: every parent_id must be an event (a row
@@ -273,7 +330,7 @@ export function parseBackup(fileText) {
 
   const problems = [];
   const tables = {};
-  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set(), billFolderIds: new Set(), billIds: new Set(), borrowRecordIds: new Set() };
+  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set(), billFolderIds: new Set(), billIds: new Set(), borrowRecordIds: new Set(), recurringIds: new Set(), recurringRunKeys: new Set() };
   const missingTables = [];
 
   for (const [name, spec] of Object.entries(TABLE_SPECS)) {
@@ -320,6 +377,7 @@ export function parseBackup(fileText) {
     if (name === "bill_folders") rows.forEach((f) => ctx.billFolderIds.add(f.id));
     if (name === "bills") rows.forEach((b) => ctx.billIds.add(b.id));
     if (name === "borrow_records") rows.forEach((b) => ctx.borrowRecordIds.add(b.id));
+    if (name === "recurring_payments") rows.forEach((r) => ctx.recurringIds.add(r.id));
   }
 
   if (problems.length) {

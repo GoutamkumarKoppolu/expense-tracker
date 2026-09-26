@@ -1,4 +1,4 @@
-import { CreditCard, DatabaseBackup, Handshake, Palette, ReceiptText, Settings, ShieldCheck, Tags, Wallet } from "lucide-react";
+import { ChartPie, CreditCard, DatabaseBackup, Handshake, Palette, ReceiptText, Settings, ShieldCheck, Tags, Wallet } from "lucide-react";
 import { useTheme } from "../../theme/useTheme";
 import { ACCENTS, BACKGROUNDS } from "../../theme/palettes";
 import PageHeader from "../../components/ui/PageHeader";
@@ -13,6 +13,12 @@ export default function MorePage({ navigate }) {
       <PageHeader title="More" />
       <div className="page-body">
         <div className="card card-list">
+          <ListRow
+            icon={ChartPie}
+            title="Report"
+            subtitle="Where your money went, by tag, vs last month"
+            onClick={() => navigate("report")}
+          />
           <ListRow
             icon={Tags}
             tone="positive"

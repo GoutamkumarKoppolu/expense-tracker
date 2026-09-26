@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChartPie, House, LayoutGrid, PiggyBank } from "lucide-react";
+import { House, LayoutGrid, PiggyBank, Repeat } from "lucide-react";
 import "./App.css";
 import BottomNav from "./app/BottomNav";
 import { useHashRoute } from "./app/useHashRoute";
@@ -18,6 +18,7 @@ import BackupPage from "./features/backup/BackupPage";
 import { BudgetsPage } from "./features/budgets";
 import { BillsPage } from "./features/bills";
 import { BorrowingPage } from "./features/borrowing";
+import { RecurringEngine, RecurringPage } from "./features/recurring";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
@@ -26,7 +27,8 @@ import { BorrowingPage } from "./features/borrowing";
 // Add a page here, nowhere else.
 const ROUTES = {
   home: { page: HomePage, tab: "home", add: true, hero: true },
-  report: { page: ReportPage, tab: "report", add: true, parent: "home" },
+  recurring: { page: RecurringPage, tab: "recurring", add: true, parent: "home" },
+  report: { page: ReportPage, tab: "more", add: true, parent: "more" },
   savings: { page: SavingsPage, tab: "savings", add: true, parent: "home" },
   more: { page: MorePage, tab: "more", parent: "home" },
   tags: { page: TagsPage, tab: "more", add: true, parent: "more" },
@@ -41,7 +43,7 @@ const ROUTES = {
 
 const TABS = [
   { id: "home", label: "Home", icon: House },
-  { id: "report", label: "Report", icon: ChartPie },
+  { id: "recurring", label: "Recurring", icon: Repeat },
   { id: "savings", label: "Savings", icon: PiggyBank },
   { id: "more", label: "More", icon: LayoutGrid },
 ];
@@ -56,6 +58,7 @@ export default function App() {
 
   return (
     <LedgerProvider>
+      <RecurringEngine />
       <div className="app">
         <main className="app-main">
           <Page navigate={navigate} param={param} onOpenTransaction={(transaction) => setSheet({ transaction })} />

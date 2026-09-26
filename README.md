@@ -1,7 +1,7 @@
 # Expense Tracker
 
 A private, offline-first money tracker for Android and the web, designed to be used with one hand.
-Track what you earn, spend and save. It knows *where* your savings came from, checks your card
+Track what you earn, spend and save. EMIs, rent and SIPs are added for you each month once your salary is in. It knows *where* your savings came from, checks your card
 statements against what you actually spent, follows a loan or a trip across months, keeps a
 big event like a wedding or a new car on budget, keeps your important bills in folders, and tracks money you've borrowed from or lent to people.
 Everything stays on your phone: no account, no server, no ads, no SMS permissions.
@@ -21,6 +21,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 
 | Problem | How the app solves it |
 |---|---|
+| **EMIs, rent and SIPs have to be typed in every month**, and it's easy to forget one or to lose track of how much of a loan is left. | **Recurring payments**: add each one once, with its day of the month and, optionally, the pending balance or number of payments left. When you add the month's **Salary**, each payment is added to your transactions on its own date and taken off your balance, and the pending balance counts down until it's done. |
 | **Not every saving comes from your salary.** Money you set aside from your pay and money family gives you get lumped together, and your "balance" goes wrong. | Each saving has a **"Deduct from current balance"** switch. Savings from your salary reduce your balance; money you were given doesn't. The balance stays honest and the savings total stays complete. |
 | **You can't tell how much you saved from which source.** | Savings are grouped into **pots by tag** (e.g. "Salary savings", "Gift money"), each showing saved, used and remaining. |
 | **Using savings muddles everything.** | **Use savings** takes money out of a specific pot. It lowers that pot, never your current balance, and can't take more than the pot holds. |
@@ -43,6 +44,13 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Home:** current balance, overall savings, and Income / Expenses / Saved cards for the selected period, followed by transactions grouped by day with a daily net.
 - **Filters:** any combination of years × months, one transaction type at a time, tags, and for savings, **From balance / Not from balance**.
 
+### Recurring payments
+- **A Recurring tab** in the bottom bar for EMIs, rent, SIPs, insurance and anything else paid every month: name, amount, **tag**, day of the month, payment method and source, and **Expense** or **Saving** (savings go into your Savings pot and follow the *Deduct from current balance* switch).
+- **Added when your salary is in:** once you add the month's earning tagged **Salary**, each payment is added on its own day and taken off your current balance. Before its day it shows **Due on 5 Oct**; until the salary is in, **Waiting for salary**; after, **Deducted on 5 Oct**. If the app wasn't opened on the day, it's added the next time you open it, still on the right date, and a month is never added twice.
+- **Ends by itself:** give a **pending balance** and/or **payments left**; each payment counts it down, the last one is only what's left, and it moves to **Completed**. For payments with no end date, tap **Mark as completed** (and **Reopen** later if needed).
+- **Savings can be paused** or **skipped for a month**. Every payment shows a month-by-month history, and the automatic entries are ordinary transactions you can edit or delete (a deleted one gives its amount back to the pending balance).
+- **Edit or delete** any recurring payment; deleting it keeps the payments already made.
+
 ### Savings
 - **"Deduct from current balance" switch** on every saving.
 - **Savings page:** available savings, used vs saved progress, the from-balance / not-from-balance split, and **pots per tag** with progress rings.
@@ -50,7 +58,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Guard rails:** you can't edit or delete a saving if money already used from its pot would push that pot below zero.
 
 ### Insights
-- **Report:** a donut chart and per-tag breakdown for Expenses, Income or Savings, with each tag's share and **% change vs the previous month**.
+- **Report** (More → Report): a donut chart and per-tag breakdown for Expenses, Income or Savings, with each tag's share and **% change vs the previous month**.
 - **Tags page:** every tag across all time, grouped **Expenses → Savings → Income**, with count, date range and total. Tap a tag to see its transactions month by month (useful for EMIs, trips and subscriptions). Includes search and a period picker.
 
 ### Credit cards
@@ -84,7 +92,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 ### Make it yours
 - **Themes:** background **System / Light / Dark / Black (AMOLED)** × accent **Purple / Blue / Green / Teal / Orange / Pink**. All combinations meet WCAG AA text contrast.
 - **Manage options:** add or remove transaction types, payment methods and payment sources.
-- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills, borrowed & lent, backups) right where you use them.
+- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, recurring payments, credit cards, tags, budgets and sub-budgets, bills, borrowed & lent, backups) right where you use them.
 
 ### Your data
 - **Backup & restore:** export everything (data, bill files and theme) to a JSON file. Large backups are written in pieces so they don't run the phone out of memory. On Android this opens the share sheet (save to Drive/Files, or send it to yourself); on the web it downloads.
@@ -108,6 +116,9 @@ Most expense apps give you a single running total and nothing more. Real money i
   <img src="docs/screenshots/home-light-blue.png" width="180" alt="Home in the Light background with Blue accent theme" />
 </p>
 <p align="center">
+  <img src="docs/screenshots/recurring.png" width="180" alt="Recurring page: what's coming up and what's been deducted this month" />
+</p>
+<p align="center">
   <img src="docs/screenshots/budgets.png" width="180" alt="Budgets page with three events, one over budget" />
   <img src="docs/screenshots/budget-event.png" width="180" alt="A car budget split into sub-budgets, with what's left and unallocated" />
   <img src="docs/screenshots/bills.png" width="180" alt="Bills page with folders for Car, Electricity, Medical and Warranties" />
@@ -126,6 +137,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 | **Pot remaining** (per tag) | saved into the pot − used from the pot (never below zero) |
 | **Income / Expenses / Saved cards** | totals for whatever the Home filters currently show |
 | **Credit card totals** | card spends only; never part of the balance |
+| **Recurring payments** | added as normal expenses or savings once the month's Salary is in and their day comes; pending balance = pending − payments made (never below zero) |
 | **Budget left** (per event) | total budget − every spend on it (direct and from its sub-budgets); can go negative |
 | **Sub-budget left** | sub-budget amount − its spends; can go negative |
 | **Unallocated** | total budget − sum of its sub-budgets (negative = over-allocated) |
@@ -199,7 +211,7 @@ client/
     domain/              Pure business rules (balance, deduction flag, filters)
     features/
       ledger/            Shared ledger state + transaction form/list
-      home/  report/  savings/  tags/  budgets/  bills/  borrowing/  cards/  settings/  appearance/  backup/
+      home/  report/  savings/  recurring/  tags/  budgets/  bills/  borrowing/  cards/  settings/  appearance/  backup/
     components/ui/       Design-system pieces: bottom sheet, page header, chips, switch, charts…
     platform/files.js    Getting files out of the app: download/share/open, chunked writes on Android
     theme/               Accent palettes + theme store
@@ -219,7 +231,6 @@ Each feature lives in its own folder with its page, components, data access and 
 
 These are honest gaps compared with established apps, roughly in priority order:
 
-- **Recurring transactions:** EMIs, rent and SIPs are entered by hand each month.
 - **Monthly limits:** budgets are for events; there are no recurring per-tag monthly limits yet.
 - **Faster entry:** there's no home-screen widget and no automatic capture from bank SMS.
 - **Card spends in reports:** card spends are tracked separately, so they don't appear in the category Report.

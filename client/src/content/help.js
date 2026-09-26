@@ -75,6 +75,16 @@ export const HELP = {
     ],
     example: "Lent Ravi ₹50,000. He pays ₹10,000, then ₹10,000, then ₹30,000 → ₹30,000, ₹20,000, then nothing left, and it moves to Completed.",
   },
+  recurring: {
+    title: "How recurring payments work",
+    body: [
+      "Add payments that repeat every month, like a home loan EMI, rent or a SIP, with the day they're paid.",
+      "Once you add that month's earning with the tag \"Salary\", each payment is added to your transactions on its day and taken off your balance, like any other expense. Before its day it shows as \"Due\"; until the salary is in, \"Waiting for salary\". If the app wasn't opened on the day, it's added the next time you open it, still dated on its day.",
+      "Give a pending balance or the number of payments left, and it stops by itself when it's all paid; the last payment is only what's left. For one with no end date, tap Mark as completed to stop it.",
+      "Savings go into your Savings pot under their tag and follow the \"Deduct from current balance\" switch. They can be paused, or skipped for a month.",
+    ],
+    example: "Home loan EMI ₹25,000 on the 5th, ₹65,000 pending. Salary on the 1st → on the 5th, ₹25,000 is added and ₹40,000 is left. Next month ₹25,000 again, then a last ₹15,000, and it's Completed.",
+  },
   tags: {
     title: "How tags help",
     body: [

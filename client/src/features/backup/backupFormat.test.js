@@ -131,3 +131,52 @@ describe("parseBackup: borrowed & lent", () => {
     expect(() => parseBackup(backupWith({ borrow_payments: [payment] }))).toThrow(/record 1 isn't in this backup/);
   });
 });
+
+describe("parseBackup: recurring payments", () => {
+  const item = {
+    id: 1,
+    name: "Home loan EMI",
+    kind: "expense",
+    amount: 25000,
+    tag: "Home loan",
+    day: 5,
+    payment_method: "UPI",
+    payment_source: null,
+    deduct_from_balance: null,
+    pending_start: 3200000,
+    duration: null,
+    start_month: "2026-09",
+    paused: false,
+    completed: false,
+    skipped_months: [],
+    created_at: "2026-09-01T10:00:00.000Z",
+  };
+  const runRow = { id: 1, recurring_id: 1, month: "2026-09", transaction_id: 42, created_at: "2026-09-05T10:00:00.000Z" };
+
+  it("imports payments and their history", () => {
+    const { tables } = parseBackup(backupWith({ recurring_payments: [item], recurring_runs: [runRow] }));
+    expect(tables.recurring_payments).toEqual([item]);
+    expect(tables.recurring_runs).toEqual([runRow]);
+  });
+
+  it("starts empty for a backup made before it existed", () => {
+    const { tables } = parseBackup(backupWith({ transactions: [] }));
+    expect(tables.recurring_payments).toEqual([]);
+    expect(tables.recurring_runs).toEqual([]);
+  });
+
+  it("defaults the saving balance switch and optional fields", () => {
+    const saving = { ...item, kind: "saving", deduct_from_balance: undefined, pending_start: "", duration: undefined, skipped_months: undefined };
+    const { tables } = parseBackup(backupWith({ recurring_payments: [saving] }));
+    expect(tables.recurring_payments[0]).toMatchObject({ deduct_from_balance: true, pending_start: null, duration: null, skipped_months: [] });
+  });
+
+  it("rejects bad rows", () => {
+    expect(() => parseBackup(backupWith({ recurring_payments: [{ ...item, day: 32 }] }))).toThrow(/day must be between 1 and 31/);
+    expect(() => parseBackup(backupWith({ recurring_payments: [{ ...item, kind: "earning" }] }))).toThrow(/kind must be expense or saving/);
+    expect(() => parseBackup(backupWith({ recurring_runs: [runRow] }))).toThrow(/recurring payment 1 isn't in this backup/);
+    expect(() =>
+      parseBackup(backupWith({ recurring_payments: [item], recurring_runs: [runRow, { ...runRow, id: 2, transaction_id: 43 }] }))
+    ).toThrow(/appears twice/);
+  });
+});

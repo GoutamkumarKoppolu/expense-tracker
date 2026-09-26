@@ -40,3 +40,11 @@ export const STORES_V5 = {
   borrow_records: "++id, direction, created_at",
   borrow_payments: "++id, record_id, date",
 };
+
+// Version 6: recurring payments (see features/recurring). A run records the
+// transaction added for one payment in one month; the unique pair makes sure
+// a month is never added twice.
+export const STORES_V6 = {
+  recurring_payments: "++id, created_at",
+  recurring_runs: "++id, recurring_id, &[recurring_id+month]",
+};

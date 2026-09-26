@@ -2283,3 +2283,49 @@ button.list-row:active {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+/* ---------- Recurring ---------- */
+
+.recurring-status {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.recurring-day-hint {
+  margin-top: -6px;
+}
+
+.recurring-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.recurring-facts div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+}
+
+.recurring-facts dt {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.recurring-facts dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.recurring-history {
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  min-height: 52px;
+}
+
+.recurring-history-head {
+  margin-bottom: -4px;
+  padding: 0 4px;
+}

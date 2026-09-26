@@ -20,7 +20,7 @@ const KINDS = [
 
 // Per-tag breakdown for the period picked on Home (shared filter). Ignores
 // Home's type/tag filters on purpose: a report shows the whole period.
-export default function ReportPage() {
+export default function ReportPage({ navigate }) {
   // `transactions` changes after any ledger mutation (e.g. via the + button),
   // which is the cue to reload this page's own queries.
   const { filters, setFilters, transactions: ledgerVersion } = useLedger();
@@ -50,7 +50,7 @@ export default function ReportPage() {
 
   return (
     <>
-      <PageHeader title="Report" subtitle={`${meta.label} by tag`} />
+      <PageHeader title="Report" subtitle={`${meta.label} by tag`} onBack={() => navigate("more")} />
       <div className="page-body">
         <ErrorBanner message={error} onDismiss={() => setError("")} />
 
