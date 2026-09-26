@@ -94,3 +94,40 @@ describe("parseBackup: bills", () => {
     expect(() => parseBackup(backupWith({ bill_folders: [folder, twin] }))).toThrow(/duplicate name/);
   });
 });
+
+describe("parseBackup: borrowed & lent", () => {
+  const record = {
+    id: 1,
+    direction: "lent",
+    person: "Ravi",
+    amount: 50000,
+    date: "2026-08-12",
+    phone: "+919876543210",
+    note: "Bike down payment",
+    completed: false,
+    created_at: "2026-08-12T10:00:00.000Z",
+  };
+  const payment = { id: 1, record_id: 1, amount: 10000, date: "2026-09-02", note: null, created_at: "2026-09-02T10:00:00.000Z" };
+
+  it("imports records and payments", () => {
+    const { tables } = parseBackup(backupWith({ borrow_records: [record], borrow_payments: [payment] }));
+    expect(tables.borrow_records).toEqual([record]);
+    expect(tables.borrow_payments).toEqual([payment]);
+  });
+
+  it("starts empty for a backup made before it existed", () => {
+    const { tables } = parseBackup(backupWith({ transactions: [] }));
+    expect(tables.borrow_records).toEqual([]);
+    expect(tables.borrow_payments).toEqual([]);
+  });
+
+  it("fills in missing optional fields", () => {
+    const { tables } = parseBackup(backupWith({ borrow_records: [{ ...record, phone: undefined, note: "", completed: undefined }] }));
+    expect(tables.borrow_records[0]).toMatchObject({ phone: null, note: null, completed: false });
+  });
+
+  it("rejects an unknown direction and payments for missing records", () => {
+    expect(() => parseBackup(backupWith({ borrow_records: [{ ...record, direction: "loan" }] }))).toThrow(/direction must be borrowed or lent/);
+    expect(() => parseBackup(backupWith({ borrow_payments: [payment] }))).toThrow(/record 1 isn't in this backup/);
+  });
+});

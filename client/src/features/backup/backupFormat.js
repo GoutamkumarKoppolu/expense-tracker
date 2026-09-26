@@ -175,6 +175,37 @@ export const TABLE_SPECS = {
       created_at: createdAt(r.created_at),
     };
   },
+  // Added in database v5. Money borrowed from / lent to people, and the
+  // payments that pay it back.
+  borrow_records: (r) => {
+    const direction = text(r.direction);
+    need(["borrowed", "lent"].includes(direction), "direction must be borrowed or lent");
+    const d = date(r.date);
+    return {
+      id: id(r.id),
+      direction,
+      person: required(r.person, "name"),
+      amount: amount(r.amount),
+      date: d,
+      phone: optional(r.phone),
+      note: optional(r.note),
+      completed: r.completed === true,
+      created_at: createdAt(r.created_at, d),
+    };
+  },
+  borrow_payments: (r, ctx) => {
+    const recordId = id(r.record_id, "record_id");
+    need(ctx.borrowRecordIds.has(recordId), `record ${recordId} isn't in this backup`);
+    const d = date(r.date);
+    return {
+      id: id(r.id),
+      record_id: recordId,
+      amount: amount(r.amount),
+      date: d,
+      note: optional(r.note),
+      created_at: createdAt(r.created_at, d),
+    };
+  },
 };
 
 // Tables whose `name` must be unique (they have a unique index).
@@ -193,6 +224,8 @@ export const TABLE_LABELS = {
   bill_folders: "Bill folders",
   bills: "Bills",
   bill_pages: "Bill pages",
+  borrow_records: "Borrowed & lent",
+  borrow_payments: "Borrowed & lent payments",
 };
 
 // Sub-budgets are one level deep: every parent_id must be an event (a row
@@ -240,7 +273,7 @@ export function parseBackup(fileText) {
 
   const problems = [];
   const tables = {};
-  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set(), billFolderIds: new Set(), billIds: new Set() };
+  const ctx = { kindByType: {}, cardIds: new Set(), budgetIds: new Set(), billFolderIds: new Set(), billIds: new Set(), borrowRecordIds: new Set() };
   const missingTables = [];
 
   for (const [name, spec] of Object.entries(TABLE_SPECS)) {
@@ -286,6 +319,7 @@ export function parseBackup(fileText) {
     }
     if (name === "bill_folders") rows.forEach((f) => ctx.billFolderIds.add(f.id));
     if (name === "bills") rows.forEach((b) => ctx.billIds.add(b.id));
+    if (name === "borrow_records") rows.forEach((b) => ctx.borrowRecordIds.add(b.id));
   }
 
   if (problems.length) {

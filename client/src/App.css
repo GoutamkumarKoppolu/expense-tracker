@@ -620,7 +620,11 @@ button.tx-row:active {
 }
 
 .tx-main .pill {
+  display: inline-block;
+  max-width: 100%;
   margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tx-amount {
@@ -1918,11 +1922,6 @@ button.list-row:active {
   border-color: var(--accent);
 }
 
-.section-head-actions {
-  display: flex;
-  gap: 16px;
-}
-
 .section-toggle {
   display: flex;
   align-items: center;
@@ -2118,4 +2117,169 @@ button.list-row:active {
   min-height: 40px;
   padding: 6px 10px;
   font-weight: 600;
+}
+
+/* ---------- Borrowed & lent ---------- */
+
+.record-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 12px 12px 14px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.record-head:active {
+  background: var(--surface-2);
+}
+
+.record-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.record-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.record-person {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-sub {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.record-sub strong {
+  color: var(--text);
+}
+
+.record-bar {
+  display: block;
+  grid-column: 1 / -1;
+  margin-top: 6px;
+}
+
+.record-bar .bar-fill {
+  display: block;
+}
+
+.record-body {
+  gap: 10px;
+}
+
+.record-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.record-note {
+  margin: 0;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.record-empty {
+  margin: 0;
+  padding: 0 4px;
+}
+
+.split-row-tap.record-payment {
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+}
+
+.record-payment-date {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.contact-number {
+  flex: 1 1 100%;
+  font-weight: 600;
+}
+
+.contact-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.textarea {
+  min-height: 72px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+/* A list row that edits on tap, with its own delete button at the end. */
+.split-row {
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
+}
+
+.split-row + .split-row {
+  border-top: 1px solid var(--border);
+}
+
+.split-row-tap {
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 4px 10px 14px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.split-row-tap:active {
+  background: var(--surface-2);
+}
+
+/* A long heading wraps; its action link stays on one line. */
+.section-head h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.section-head .link-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }

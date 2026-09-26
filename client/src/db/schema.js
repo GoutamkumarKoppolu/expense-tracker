@@ -33,3 +33,10 @@ export const STORES_V4 = {
   bills: "++id, folder_id, created_at",
   bill_pages: "++id, bill_id",
 };
+
+// Version 5: money borrowed from or lent to people (see features/borrowing).
+// A record is one borrowing or lending; payments pay it back over time.
+export const STORES_V5 = {
+  borrow_records: "++id, direction, created_at",
+  borrow_payments: "++id, record_id, date",
+};

@@ -66,6 +66,8 @@ client/src/
                            (pure rules in domain.js; list at #/budgets, one event at #/budgets/<id>)
     bills/                 Bills: folders of uploaded photos/PDFs, a bill = one or more pages (#/bills, #/bills/<folder>,
                            #/bills/<folder>/<bill>); files stored as Blobs with a small preview; thumbnail.js makes previews
+    borrowing/             "Borrowed & lent" (never call it "loans" in the UI): per-person records with payments,
+                           tabs Borrowed/Lent (DIRECTIONS in domain.js holds each tab's wording); not linked to the balance
     backup/                Backup & restore: backupFormat.js (format version, per-table specs, migrations, validation),
                            api.js (export all tables / restore in one transaction; Blobs ⇄ { $blob: base64, type })
   platform/files.js        Getting files out of the app: download / share sheet / open in the phone's viewer
@@ -77,7 +79,7 @@ client/src/
     themeStore.js          Saves the choice in localStorage; sets data-theme / data-accent / data-bg on <html>
     useTheme.js            React hook over the store
   db/
-    schema.js              Dexie store definitions (STORES = v1, then STORES_V2..V4 with each version's additions)
+    schema.js              Dexie store definitions (STORES = v1, then STORES_V2..V5 with each version's additions)
     index.js               Dexie instance, versioning, populate -> seed, storage.persist()
     seed.js                Default transaction types / payment methods / payment sources
     validators.js          Pure validation helpers (throw Error with user-facing messages)
@@ -102,6 +104,8 @@ client/src/
 | `bill_folders` (v4) | `id`, `name` (unique, case-insensitive, checked in `api.js`), `created_at` |
 | `bills` (v4) | `id`, `folder_id`, `name`, `created_at` |
 | `bill_pages` (v4) | `id`, `bill_id`, `position`, `name` (original file name), `type` (MIME), `size`, `data` (Blob, the original file), `thumb` (small JPEG Blob for photos, else `null`), `created_at` |
+| `borrow_records` (v5) | `id`, `direction` (`borrowed` \| `lent`), `person`, `amount`, `date`, `phone` (cleaned, or `null`), `note`, `completed` (marked by hand; fully paid counts as completed without it), `created_at` |
+| `borrow_payments` (v5) | `id`, `record_id`, `amount` (never more than what's left), `date`, `note`, `created_at` |
 
 Conventions in the data layer:
 - Dates are stored as **strings** (`date` = `"YYYY-MM-DD"`, `created_at` = ISO). Month keys are `date.slice(0, 7)` (`"YYYY-MM"`). Never store `Date` objects. To turn a timestamp into a date, use `localDate()` / `today()` from `utils/format.js`, never `iso.slice(0, 10)`: that gives the UTC date, which is yesterday before 05:30 IST.
@@ -129,8 +133,9 @@ Conventions in the data layer:
 | Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
 | Budgets (More → Budgets): events with a total, optional sub-budgets (one level, "Unallocated" / over-allocated shown), spends from a sub-budget or the whole budget, overspending shown in red, Mark as done / Reopen; never touches the balance | `features/budgets/` |
 | Bills (More → Bills): folders (one level) of bills; add a bill by camera or file picker (photos/PDFs, originals kept, ≤ 50 MB each), each file = its own bill (named after the file, editable before saving), Add pages on a bill for multi-page bills; view photos in-app, Open in the phone's viewer, Share; rename/move bills, add/delete pages, rename/delete folders; search; included in backups | `features/bills/`, `platform/files.js`, `FileViewerPlugin.java` |
-| Backup & restore (More → Backup & restore): export everything (data + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
-| Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills | `components/ui/InfoButton.jsx`, `content/help.js` |
+| Borrowed & lent (More → Borrowed & lent): tabs Borrowed / Lent with the outstanding total; one record per borrowing/lending (person, amount, date, optional phone + why), expandable to its payments ("Repaid" / "Received"); payments capped at what's left; Completed automatically when fully paid, or Mark as completed / Reopen; Call and WhatsApp links; never touches the balance | `features/borrowing/` |
+| Backup & restore (More → Backup & restore): export everything (data, bill files + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
+| Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills, borrowed & lent | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |
 | Manage options: transaction types (with kind), payment methods, payment sources | `features/settings/SettingsPage.jsx` |
 | Themes: background (System / Light / Dark / Black AMOLED) × accent (Purple, Blue, Green, Teal, Orange, Pink), saved per device, applied instantly | `theme/`, `features/appearance/`, More → Appearance |
@@ -164,7 +169,7 @@ Conventions in the data layer:
 - Filtering loads whole tables and filters in memory. That's fine at personal scale, but use Dexie indexes if data grows.
 - Schema changes need a **new `db.version(n)`**, not an edit to an existing version. Editing one breaks existing installs, including users' phones.
 - Savings pots are keyed by tag name, and withdrawals store the tag string, so renames rely on the savings guard.
-- Unit tests cover only pure rules (budgets and bills domain, backup format). Native plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are only compiled by the Android CI build, so check that build after touching them. UI checks are done manually or with a throwaway Playwright script.
+- Unit tests cover only pure rules (budgets, bills and borrowing domain, Back-button targets, backup format). Native plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are only compiled by the Android CI build, so check that build after touching them. UI checks are done manually or with a throwaway Playwright script.
 
 ## Rules for building new features
 

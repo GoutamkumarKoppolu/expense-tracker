@@ -65,6 +65,16 @@ export const HELP = {
     ],
     example: "Folder \"Warranties\": \"Fridge invoice\" (2 photos) and \"TV warranty card\" (a PDF). When the fridge needs repair, open the folder and show the invoice.",
   },
+  borrowing: {
+    title: "Borrowed & lent",
+    body: [
+      "Keep track of money you borrowed from people (Borrowed) and money you gave people that they'll pay back (Lent).",
+      "Add one entry each time: who, how much, when, and why if you like. Tap it to see everything, and add each part as it's paid back. What's left updates straight away, and a payment can't be more than what's left.",
+      "When it's fully paid back it's marked Completed automatically. If you decide to let the rest go, tap Mark as completed. Save a phone number to call or WhatsApp them from here.",
+      "This is only a record of who owes what. It doesn't change your current balance, so log the actual money on Home if you want it there too.",
+    ],
+    example: "Lent Ravi ₹50,000. He pays ₹10,000, then ₹10,000, then ₹30,000 → ₹30,000, ₹20,000, then nothing left, and it moves to Completed.",
+  },
   tags: {
     title: "How tags help",
     body: [

@@ -17,6 +17,7 @@ import TagsPage from "./features/tags/TagsPage";
 import BackupPage from "./features/backup/BackupPage";
 import { BudgetsPage } from "./features/budgets";
 import { BillsPage } from "./features/bills";
+import { BorrowingPage } from "./features/borrowing";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
@@ -35,6 +36,7 @@ const ROUTES = {
   backup: { page: BackupPage, tab: "more", parent: "more" },
   budgets: { page: BudgetsPage, tab: "more", parent: "more" },
   bills: { page: BillsPage, tab: "more", parent: "more" },
+  borrowing: { page: BorrowingPage, tab: "more", parent: "more" },
 };
 
 const TABS = [

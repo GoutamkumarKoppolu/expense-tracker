@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleCheck, Layers, Pencil, Plus, RotateCcw } from "lucide-react";
+import { CircleCheck, Layers, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import PageHeader from "../../components/ui/PageHeader";
 import ErrorBanner from "../../components/ui/ErrorBanner";
 import InfoButton from "../../components/ui/InfoButton";
@@ -113,23 +113,28 @@ export default function EventPage({ event, spends, error, setError, run, onBack 
               <span className="muted">Tap one to see its spends</span>
             </div>
             <SubBudgetList subs={event.subs} selectedId={selectedSub?.id ?? null} onSelect={setSelectedSubId} />
+            {selectedSub && (
+              <div className="button-row">
+                <button type="button" className="btn btn-soft btn-block" onClick={() => open("sub", selectedSub)}>
+                  <Pencil size={18} /> Edit
+                </button>
+                <button type="button" className="btn btn-danger-ghost btn-block" onClick={() => handleDeleteSub(selectedSub)}>
+                  <Trash2 size={18} /> Delete
+                </button>
+              </div>
+            )}
           </>
         )}
 
         <div className="section-head">
           <h2>Spends{selectedSub && ` · ${selectedSub.name}`}</h2>
           {selectedSub && (
-            <span className="section-head-actions">
-              <button type="button" className="link-btn" onClick={() => open("sub", selectedSub)}>
-                Edit
-              </button>
-              <button type="button" className="link-btn" onClick={() => setSelectedSubId(null)}>
-                Show all
-              </button>
-            </span>
+            <button type="button" className="link-btn" onClick={() => setSelectedSubId(null)}>
+              Show all
+            </button>
           )}
         </div>
-        <SpendList spends={shownSpends} onOpen={(s) => open("spend", s)} />
+        <SpendList spends={shownSpends} onOpen={(s) => open("spend", s)} onDelete={handleDeleteSpend} />
 
         <button
           type="button"
@@ -138,6 +143,9 @@ export default function EventPage({ event, spends, error, setError, run, onBack 
         >
           {event.done ? <RotateCcw size={18} /> : <CircleCheck size={18} />}
           {event.done ? "Reopen budget" : "Mark as done"}
+        </button>
+        <button type="button" className="btn btn-danger-ghost btn-block" onClick={handleDeleteEvent}>
+          <Trash2 size={18} /> Delete budget
         </button>
       </div>
 

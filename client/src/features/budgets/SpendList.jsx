@@ -1,9 +1,9 @@
-import { Receipt } from "lucide-react";
+import { Receipt, Trash2 } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
 import { currency, dateHeading, groupByDate } from "../../utils/format";
 
-// Date-grouped spends of one event. Tap a row to edit or delete it.
-export default function SpendList({ spends, onOpen }) {
+// Date-grouped spends of one event. Tap a row to edit it; the bin deletes it.
+export default function SpendList({ spends, onOpen, onDelete }) {
   if (!spends.length) {
     return <EmptyState icon={Receipt}>No spends here yet. Use “Add spend” to note one down.</EmptyState>;
   }
@@ -17,16 +17,26 @@ export default function SpendList({ spends, onOpen }) {
           </div>
           <div className="card card-list">
             {g.rows.map((s) => (
-              <button type="button" className="tx-row" key={s.id} onClick={() => onOpen(s)}>
-                <span className="icon-badge tone-negative">
-                  <Receipt size={18} />
-                </span>
-                <span className="tx-main">
-                  <span className="tx-title">{s.description}</span>
-                  {s.budgetName && <span className="pill tone-accent">{s.budgetName}</span>}
-                </span>
-                <span className="tx-amount text-negative">−{currency(s.amount)}</span>
-              </button>
+              <div className="split-row" key={s.id}>
+                <button type="button" className="split-row-tap" onClick={() => onOpen(s)}>
+                  <span className="icon-badge tone-negative">
+                    <Receipt size={18} />
+                  </span>
+                  <span className="tx-main">
+                    <span className="tx-title">{s.description}</span>
+                    {s.budgetName && <span className="pill tone-accent">{s.budgetName}</span>}
+                  </span>
+                  <span className="tx-amount text-negative">−{currency(s.amount)}</span>
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn icon-btn-danger"
+                  onClick={() => onDelete(s)}
+                  aria-label={`Delete ${s.description}`}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             ))}
           </div>
         </section>

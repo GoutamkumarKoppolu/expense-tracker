@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import { STORES, STORES_V2, STORES_V3, STORES_V4 } from "./schema";
+import { STORES, STORES_V2, STORES_V3, STORES_V4, STORES_V5 } from "./schema";
 import { seed } from "./seed";
 
 export const db = new Dexie("expense-tracker");
@@ -9,6 +9,7 @@ db.version(1).stores(STORES);
 db.version(2).stores(STORES_V2);
 db.version(3).stores(STORES_V3);
 db.version(4).stores(STORES_V4);
+db.version(5).stores(STORES_V5);
 
 // Fires exactly once, the moment the database is first created — the same
 // effect as Postgres's `ON CONFLICT DO NOTHING` seed guard in schema.sql.

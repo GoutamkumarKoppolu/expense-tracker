@@ -3,7 +3,7 @@
 A private, offline-first money tracker for Android and the web, designed to be used with one hand.
 Track what you earn, spend and save. It knows *where* your savings came from, checks your card
 statements against what you actually spent, follows a loan or a trip across months, keeps a
-big event like a wedding or a new car on budget, and keeps your important bills in folders.
+big event like a wedding or a new car on budget, keeps your important bills in folders, and tracks money you've borrowed from or lent to people.
 Everything stays on your phone: no account, no server, no ads, no SMS permissions.
 
 <p align="center">
@@ -28,6 +28,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 | **A loan or a trip is spread over many months.** | Use the same **tag** every time ("Car loan", "Goa trip"). The **Tags** page shows every tag across all months with totals, broken down month by month. |
 | **Big events blow past the plan.** A wedding or a new car has many parts, and it's hard to see what's left overall and for each part. | **Budgets**: give an event a total, optionally split it into sub-budgets (Venue, Catering…), and note down each spend. Every spend comes off its sub-budget and the total, you see what's left at a glance, and going over is shown in red instead of blocked. Budgets are a plan, so they never touch your balance. |
 | **Bills get lost when you need them.** The fridge breaks and the invoice is somewhere in a drawer or a chat. | **Bills**: photos and PDFs of bills, warranties and receipts, kept at original quality in folders you name (Warranties, Electricity, Car…). Each file is its own bill (pages can be added to keep a multi-page bill together), you can search by name, and open or share it straight from the app. Stored on the phone and included in backups. |
+| **"Who owes whom" lives in your head.** You borrowed ₹50K from a friend, lent ₹20K to a cousin, and they're paid back in parts over months. | **Borrowed & lent**: one entry per borrowing or lending (who, how much, when, why, phone). Add each part as it's paid back and see what's left; it's marked Completed when fully paid. Call or WhatsApp the person from the entry. Separate from your balance. |
 | **Your data is stuck on one phone.** | **Backup & restore** exports everything to one file you can keep on Drive. Import it on a new phone or reinstall. Older backups keep working as the app gains features. |
 | **Finance apps want your SMS, a login and your data on their servers.** | Fully offline. Data lives in the phone's local database (IndexedDB) and nothing is sent anywhere. |
 | **Apps built for two thumbs on a tablet.** | A **One UI-style, one-handed layout**: read-only information at the top, and everything you tap (tabs, the + button, forms, filters) within thumb reach at the bottom. |
@@ -63,6 +64,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Spend from a sub-budget or the whole budget:** either way it comes off the total. Tap a sub-budget to see only its spends; tap a spend to edit, move or delete it.
 - **Overspending is allowed** and shown in red, so the numbers always match reality.
 - **Mark as done** moves a finished event out of the way (you can reopen it). Budgets are a plan only: they never change your balance.
+- **Delete** a whole budget, a sub-budget (tap it, then Delete) or a single spend (🗑 on its row). Each asks first and says what goes with it.
 
 ### Bills
 - **Keep important bills** as photos or PDFs, sorted into **folders** you create (one level: a folder holds any number of bills).
@@ -71,10 +73,18 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Organise:** rename or move a bill to another folder, add or delete pages, rename folders, delete a bill or a whole folder, and **search** bills across all folders.
 - **Backed up:** bill files are included in the backup file, so they move with you to a new phone.
 
+### Borrowed & lent
+- **Two tabs:** **Borrowed** (money you owe people) and **Lent** (money people owe you), each with the total still outstanding.
+- **One entry per borrowing or lending:** person, amount, date, and optionally why and their phone number. Tap it to expand the details and every payment.
+- **Pay back in parts:** add each repayment (Borrowed) or amount received (Lent) with its date, pre-filled with what's left. A payment can't be more than what's left, and the amount can't be edited below what's already been paid.
+- **Completed:** fully paid entries move to a collapsed Completed section automatically. **Mark as completed** closes one early (e.g. you let the rest go), and **Reopen** undoes it.
+- **Delete** an entry (with its payments) or a single payment (🗑 on its row); each asks first.
+- **Call or WhatsApp** the person straight from the entry. Kept separate from your balance, so nothing is counted twice.
+
 ### Make it yours
 - **Themes:** background **System / Light / Dark / Black (AMOLED)** × accent **Purple / Blue / Green / Teal / Orange / Pink**. All combinations meet WCAG AA text contrast.
 - **Manage options:** add or remove transaction types, payment methods and payment sources.
-- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills, backups) right where you use them.
+- **Info buttons (ⓘ)** explain the less obvious features (balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills, borrowed & lent, backups) right where you use them.
 
 ### Your data
 - **Backup & restore:** export everything (data, bill files and theme) to a JSON file. Large backups are written in pieces so they don't run the phone out of memory. On Android this opens the share sheet (save to Drive/Files, or send it to yourself); on the web it downloads.
@@ -102,6 +112,7 @@ Most expense apps give you a single running total and nothing more. Real money i
   <img src="docs/screenshots/budget-event.png" width="180" alt="A car budget split into sub-budgets, with what's left and unallocated" />
   <img src="docs/screenshots/bills.png" width="180" alt="Bills page with folders for Car, Electricity, Medical and Warranties" />
   <img src="docs/screenshots/bill-folder.png" width="180" alt="Warranties folder with three bills, one with two pages" />
+  <img src="docs/screenshots/borrowed-lent.png" width="180" alt="Borrowed and lent page on the Lent tab, with Ravi expanded showing what's left" />
 </p>
 
 ---
@@ -118,6 +129,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 | **Budget left** (per event) | total budget − every spend on it (direct and from its sub-budgets); can go negative |
 | **Sub-budget left** | sub-budget amount − its spends; can go negative |
 | **Unallocated** | total budget − sum of its sub-budgets (negative = over-allocated) |
+| **Borrowed / lent left** (per entry) | amount − payments so far (never below zero); the tab total adds up the entries that aren't completed |
 
 Example: balance ₹5,000. Save ₹1,000 from salary → balance ₹4,000. Save ₹2,000 you were given → balance stays ₹4,000, savings ₹3,000. Use ₹500 from savings → savings ₹2,500, balance still ₹4,000.
 
@@ -187,7 +199,7 @@ client/
     domain/              Pure business rules (balance, deduction flag, filters)
     features/
       ledger/            Shared ledger state + transaction form/list
-      home/  report/  savings/  tags/  budgets/  bills/  cards/  settings/  appearance/  backup/
+      home/  report/  savings/  tags/  budgets/  bills/  borrowing/  cards/  settings/  appearance/  backup/
     components/ui/       Design-system pieces: bottom sheet, page header, chips, switch, charts…
     platform/files.js    Getting files out of the app: download/share/open, chunked writes on Android
     theme/               Accent palettes + theme store
