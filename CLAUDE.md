@@ -27,7 +27,7 @@ No `.env`, database, or server is needed. To reset local data, delete the `expen
 **Android:**
 - CI: GitHub → Actions → "Build Android APK" → Run workflow (manual `workflow_dispatch`, [.github/workflows/android-build.yml](.github/workflows/android-build.yml)). Download the `app-debug-apk` artifact. It uses Node 20 and JDK 21, and the build is an unsigned debug build.
 - Local (needs Android Studio): `cd client && npm run cap:sync && npx cap open android`.
-- `client/android/` is Capacitor-generated. Commit it as-is and avoid hand-editing it unless a native change is really required. The local plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are registered in `MainActivity`. `FileViewerPlugin` opens a file from the cache folder with `ACTION_VIEW` through the existing FileProvider (`res/xml/file_paths.xml`); JS falls back to the share sheet if it fails.
+- `client/android/` is Capacitor-generated. Commit it as-is and avoid hand-editing it unless a native change is really required. The local plugins (`SystemBarsPlugin`, `FileViewerPlugin`) are registered in `MainActivity`. `MainActivity` also (1) replaces Capacitor's edge-to-edge insets listener with one that lifts the WebView above the keyboard (Android 15 no longer resizes for it, so sheets were hidden), and (2) sends the Back button to `window.appHandleBack()` (`app/useBackButton.js`) instead of closing the app. `FileViewerPlugin` opens a file from the cache folder with `ACTION_VIEW` through the existing FileProvider (`res/xml/file_paths.xml`); JS falls back to the share sheet if it fails.
 - **Status bar / navigation bar (Android 15+ edge-to-edge):** `capacitor.config.json` sets `android.adjustMarginsForEdgeToEdge: "auto"`, so Android insets the WebView below the status bar and above the nav bar natively (don't rely on `env(safe-area-inset-*)`, which older Android WebViews report as 0). The strips behind the bars are coloured by the local `SystemBarsPlugin.java` (registered in `MainActivity`), driven from `app/useSystemBars.js`: hero colour on pages with `hero: true` in `ROUTES`, page background elsewhere, bottom nav colour at the bottom, with icons light/dark to stay readable. Keep the CSS `env(safe-area-inset-*)` padding too, for iOS and browsers.
 
 **Legacy server (optional, not used by the app):** see README. `cd server && cp .env.example .env && npm install && npm start` against a Postgres DB created from `server/schema.sql`.
@@ -39,7 +39,9 @@ client/src/
   main.jsx                 React root
   App.jsx                  Shell only: ROUTES page registry, bottom nav, global add/edit transaction sheet
   app/
-    useHashRoute.js        Hash router (#/savings, #/budgets/12 → route + `param` prop). Real history entries, so the Android back button works
+    useHashRoute.js        Hash router (#/savings, #/budgets/12 → route + `param` prop); navigate(id, { replace })
+    useBackButton.js       Android Back (called from MainActivity): closes the top sheet, else goes one level up
+                           (drops the last `param` segment, then the route's `parent` in ROUTES); false on Home = exit
     BottomNav.jsx          One UI bottom tabs with the raised centre + button
   api.js                   Core ledger data access: transactions, options, overview, registerTransactionGuard
   domain/transactions.js   Pure ledger rules: kinds, balance-deduction flag, computeTotals, matchesFilters
@@ -118,7 +120,7 @@ Conventions in the data layer:
 
 | Feature | Where |
 |---|---|
-| Navigation: bottom tabs Home · Report · **+** · Savings · More; More → Credit cards, Manage options; Android back button via hash routes | `App.jsx` (`ROUTES`, `TABS`), `app/` |
+| Navigation: bottom tabs Home · Report · **+** · Savings · More; More → Credit cards, Manage options; Android Back goes up one level (sheet → page levels → `parent` → Home → exit) | `App.jsx` (`ROUTES`, `TABS`), `app/` |
 | Add/edit/delete transactions in a bottom sheet (amount, type chips, "Deduct from current balance" switch for savings, tag + recent-tag chips, date, note, payment method/source) | `features/ledger/TransactionSheet.jsx`, `TransactionForm.jsx` |
 | Home: balance hero (current balance, overall savings), Income/Expenses/Saved cards for the filters, date-grouped transaction list | `features/home/HomePage.jsx`, `features/ledger/TransactionList.jsx` |
 | Filters sheet: years × months, single type (All/Earning/Expense/Saving), balance deduction (All/From balance/Not from balance) when Saving, tags | `features/home/FilterSheet.jsx`, `matchesFilters` |
@@ -126,7 +128,7 @@ Conventions in the data layer:
 | Savings: available/used summary, from/not-from balance split, per-tag pots with progress rings, "Use savings" sheet (capped at pot remaining), history filterable by pot | `features/savings/` |
 | Tags page (More → Tags, or "By tag" on Home): all time by default, sections Expenses → Savings → Income, each tag with count, date range, total (savings split from/not from balance); expand for its transactions by month; search; period picker | `features/tags/` |
 | Budgets (More → Budgets): events with a total, optional sub-budgets (one level, "Unallocated" / over-allocated shown), spends from a sub-budget or the whole budget, overspending shown in red, Mark as done / Reopen; never touches the balance | `features/budgets/` |
-| Bills (More → Bills): folders (one level) of bills; add a bill by camera or file picker (photos/PDFs, originals kept, ≤ 50 MB each), several files = one bill with pages; view photos in-app, Open in the phone's viewer, Share; rename/move bills, add/delete pages, rename/delete folders; search; included in backups | `features/bills/`, `platform/files.js`, `FileViewerPlugin.java` |
+| Bills (More → Bills): folders (one level) of bills; add a bill by camera or file picker (photos/PDFs, originals kept, ≤ 50 MB each), each file = its own bill (named after the file, editable before saving), Add pages on a bill for multi-page bills; view photos in-app, Open in the phone's viewer, Share; rename/move bills, add/delete pages, rename/delete folders; search; included in backups | `features/bills/`, `platform/files.js`, `FileViewerPlugin.java` |
 | Backup & restore (More → Backup & restore): export everything (data + theme) to a JSON file (download on web, share sheet on Android); import validates the whole file, upgrades older backups, shows a summary, then replaces all data atomically | `features/backup/` |
 | Info buttons (ⓘ) explaining balance deduction, savings, credit cards, tags, budgets and sub-budgets, bills | `components/ui/InfoButton.jsx`, `content/help.js` |
 | Credit cards: card visuals, log spend / delete per card, period picker, 6-month utilization chart (palette `--cat-1..8`) | `features/cards/` |

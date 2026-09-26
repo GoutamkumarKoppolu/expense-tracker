@@ -1,27 +1,36 @@
 import { useState } from "react";
 import FormSheet from "../../components/ui/FormSheet";
-import { createBill } from "./api";
+import { createBills } from "./api";
 import AddBillForm from "./AddBillForm";
 
 const FORM_ID = "add-bill-form";
 
-// Sheet for uploading a bill. `run` saves it (see BillsPage); onSaved gets
-// the new bill so the caller can open it.
+// Sheet for uploading bills (one per file). `run` saves them (see
+// BillsPage); onSaved gets the new bills so the caller can show them.
 export default function AddBillSheet({ folders, initialFolderId, error, run, onSaved, onClose }) {
   const [saving, setSaving] = useState(false);
+  const [count, setCount] = useState(0);
 
   async function handleSubmit(data) {
     if (saving) return;
     setSaving(true);
-    let bill;
-    const ok = await run(async () => (bill = await createBill(data)));
+    let bills;
+    const ok = await run(async () => (bills = await createBills(data)));
     setSaving(false);
-    if (ok) onSaved(bill);
+    if (ok) onSaved(bills);
   }
 
+  const label = count > 1 ? `Save ${count} bills` : "Save bill";
+
   return (
-    <FormSheet title="Add a bill" formId={FORM_ID} submitLabel={saving ? "Saving…" : "Save bill"} error={error} onClose={onClose}>
-      <AddBillForm id={FORM_ID} folders={folders} initialFolderId={initialFolderId} onSubmit={handleSubmit} />
+    <FormSheet title="Add bills" formId={FORM_ID} submitLabel={saving ? "Saving…" : label} error={error} onClose={onClose}>
+      <AddBillForm
+        id={FORM_ID}
+        folders={folders}
+        initialFolderId={initialFolderId}
+        onSubmit={handleSubmit}
+        onCountChange={setCount}
+      />
     </FormSheet>
   );
 }

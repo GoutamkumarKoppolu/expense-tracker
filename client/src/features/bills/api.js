@@ -76,23 +76,30 @@ async function toPages(files, positions) {
   return pages;
 }
 
-// data: { name, files, folderId } or { name, files, newFolderName }.
-export async function createBill(data) {
-  const name = requireNonEmpty(data.name, "bill name");
+// Saves one bill per file, all or nothing.
+// data: { items: [{ name, file }], folderId } or { items, newFolderName }.
+export async function createBills(data) {
+  const items = data.items || [];
+  if (!items.length) throw new Error("Add at least one photo or PDF");
+  const names = items.map((it) => requireNonEmpty(it.name, "bill name"));
   const newFolderName = data.newFolderName?.trim();
   if (newFolderName) await assertUniqueFolder(newFolderName);
   else await getFolder(data.folderId);
-  const pages = await toPages(data.files, nextPositions([], data.files.length));
+  const pages = [];
+  for (const it of items) pages.push(...(await toPages([it.file], [0])));
 
-  let billId;
+  const billIds = [];
   await db.transaction("rw", db.bill_folders, db.bills, db.bill_pages, async () => {
     const folderId = newFolderName
       ? await db.bill_folders.add({ name: newFolderName, created_at: nowIso() })
       : Number(data.folderId);
-    billId = await db.bills.add({ folder_id: folderId, name, created_at: nowIso() });
-    await db.bill_pages.bulkAdd(pages.map((p) => ({ ...p, bill_id: billId })));
+    for (const [i, name] of names.entries()) {
+      const billId = await db.bills.add({ folder_id: folderId, name, created_at: nowIso() });
+      await db.bill_pages.add({ ...pages[i], bill_id: billId });
+      billIds.push(billId);
+    }
   });
-  return db.bills.get(billId);
+  return db.bills.bulkGet(billIds);
 }
 
 // Renames a bill and/or moves it to another folder.

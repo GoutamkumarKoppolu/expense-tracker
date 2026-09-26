@@ -21,8 +21,11 @@ export function useHashRoute(routes, fallback) {
     return () => window.removeEventListener("hashchange", onChange);
   }, [routes, fallback]);
 
-  const navigate = useCallback((id) => {
-    window.location.hash = `/${id}`;
+  // `replace` swaps the current history entry instead of adding one (used
+  // by the Back button, so going up doesn't grow the history).
+  const navigate = useCallback((id, { replace = false } = {}) => {
+    if (replace) window.location.replace(`#/${id}`);
+    else window.location.hash = `/${id}`;
   }, []);
 
   return [state.route, navigate, state.param];

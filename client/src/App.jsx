@@ -3,6 +3,7 @@ import { ChartPie, House, LayoutGrid, PiggyBank } from "lucide-react";
 import "./App.css";
 import BottomNav from "./app/BottomNav";
 import { useHashRoute } from "./app/useHashRoute";
+import { useBackButton } from "./app/useBackButton";
 import { useSystemBars } from "./app/useSystemBars";
 import { LedgerProvider, TransactionSheet } from "./features/ledger";
 import HomePage from "./features/home/HomePage";
@@ -19,20 +20,21 @@ import { BillsPage } from "./features/bills";
 
 // Page registry. `tab` is the bottom-nav tab that stays highlighted; `add`
 // shows the + (add transaction) button; `hero` means the page starts with
-// the colored balance header (status bar is tinted to match). Add a page
-// here, nowhere else.
+// the colored balance header (status bar is tinted to match); `parent` is
+// where the Android Back button goes (none on Home: Back leaves the app).
+// Add a page here, nowhere else.
 const ROUTES = {
   home: { page: HomePage, tab: "home", add: true, hero: true },
-  report: { page: ReportPage, tab: "report", add: true },
-  savings: { page: SavingsPage, tab: "savings", add: true },
-  more: { page: MorePage, tab: "more" },
-  tags: { page: TagsPage, tab: "more", add: true },
-  cards: { page: CreditCardsPage, tab: "more" },
-  settings: { page: SettingsPage, tab: "more" },
-  appearance: { page: AppearancePage, tab: "more" },
-  backup: { page: BackupPage, tab: "more" },
-  budgets: { page: BudgetsPage, tab: "more" },
-  bills: { page: BillsPage, tab: "more" },
+  report: { page: ReportPage, tab: "report", add: true, parent: "home" },
+  savings: { page: SavingsPage, tab: "savings", add: true, parent: "home" },
+  more: { page: MorePage, tab: "more", parent: "home" },
+  tags: { page: TagsPage, tab: "more", add: true, parent: "more" },
+  cards: { page: CreditCardsPage, tab: "more", parent: "more" },
+  settings: { page: SettingsPage, tab: "more", parent: "more" },
+  appearance: { page: AppearancePage, tab: "more", parent: "more" },
+  backup: { page: BackupPage, tab: "more", parent: "more" },
+  budgets: { page: BudgetsPage, tab: "more", parent: "more" },
+  bills: { page: BillsPage, tab: "more", parent: "more" },
 };
 
 const TABS = [
@@ -44,6 +46,7 @@ const TABS = [
 
 export default function App() {
   const [route, navigate, param] = useHashRoute(ROUTES, "home");
+  useBackButton(ROUTES, route, param, navigate);
   // null = closed, { transaction: null } = add, { transaction } = edit
   const [sheet, setSheet] = useState(null);
   const { page: Page, tab, add, hero = false } = ROUTES[route];

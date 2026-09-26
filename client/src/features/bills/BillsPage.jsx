@@ -71,6 +71,7 @@ export default function BillsPage({ navigate, param }) {
           {...shared}
           folder={folder}
           bills={bills.filter((b) => b.folder_id === folder.id)}
+          navigate={navigate}
           onBack={() => navigate("bills")}
           onOpenBill={openBill}
         />

@@ -6,27 +6,29 @@ import FilePickers from "./FilePickers";
 
 const NEW_FOLDER = "new";
 
-// Upload one bill: pick a folder (or name a new one), add one or more pages
-// (photos or PDFs), name it. Submitted by the sheet's footer button via the
-// `id`/`form` attribute.
-export default function AddBillForm({ id, folders, initialFolderId, onSubmit }) {
+// Upload bills into a folder (an existing one, or a new one named here).
+// Every chosen file becomes its own bill, named after the file; each name
+// can be changed before saving. Submitted by the sheet's footer button via
+// the `id`/`form` attribute.
+export default function AddBillForm({ id, folders, initialFolderId, onSubmit, onCountChange }) {
   const [folder, setFolder] = useState(() => initialFolderId ?? folders[0]?.id ?? NEW_FOLDER);
   const [newFolderName, setNewFolderName] = useState("");
-  const [name, setName] = useState("");
-  const [nameTouched, setNameTouched] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [items, setItems] = useState([]); // [{ key, file, name }]
+
+  function update(next) {
+    setItems(next);
+    onCountChange?.(next.length);
+  }
 
   function addFiles(picked) {
-    const next = [...files, ...picked];
-    setFiles(next);
-    if (!nameTouched) setName(defaultBillName(next[0].name));
+    const stamp = Date.now();
+    update([...items, ...picked.map((file, i) => ({ key: `${stamp}-${i}`, file, name: defaultBillName(file.name) }))]);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     onSubmit({
-      name: name.trim(),
-      files,
+      items: items.map((it) => ({ name: it.name.trim(), file: it.file })),
       ...(folder === NEW_FOLDER ? { newFolderName: newFolderName.trim() } : { folderId: folder }),
     });
   }
@@ -68,29 +70,39 @@ export default function AddBillForm({ id, folders, initialFolderId, onSubmit }) 
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder="e.g. Electricity, Car service"
+            enterKeyHint="done"
             required
           />
         </label>
       )}
 
       <div className="field">
-        <span className="field-label">Pages</span>
-        {files.length > 0 && (
+        <span className="field-label">Bills</span>
+        {items.length > 0 && (
           <div className="card card-list upload-list">
-            {files.map((f, i) => (
-              <div className="upload-row" key={`${f.name}-${i}`}>
+            {items.map((it, i) => (
+              <div className="upload-row" key={it.key}>
                 <span className="icon-badge tone-accent">
-                  {pageKind(f.type) === "pdf" ? <FileText size={18} /> : <Image size={18} />}
+                  {pageKind(it.file.type) === "pdf" ? <FileText size={18} /> : <Image size={18} />}
                 </span>
                 <span className="upload-text">
-                  <span className="upload-name">{f.name}</span>
-                  <span className="upload-meta">{fileSize(f.size)}</span>
+                  <input
+                    className="input upload-name-input"
+                    value={it.name}
+                    onChange={(e) => update(items.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                    aria-label={`Name for ${it.file.name}`}
+                    enterKeyHint="done"
+                    required
+                  />
+                  <span className="upload-meta">
+                    {it.file.name} · {fileSize(it.file.size)}
+                  </span>
                 </span>
                 <button
                   type="button"
                   className="icon-btn"
-                  onClick={() => setFiles((current) => current.filter((_, j) => j !== i))}
-                  aria-label={`Remove ${f.name}`}
+                  onClick={() => update(items.filter((_, j) => j !== i))}
+                  aria-label={`Remove ${it.file.name}`}
                 >
                   <X size={18} />
                 </button>
@@ -98,23 +110,12 @@ export default function AddBillForm({ id, folders, initialFolderId, onSubmit }) 
             ))}
           </div>
         )}
-        <FilePickers onPick={addFiles} chooseLabel={files.length ? "Add more" : "Choose files"} />
-        <span className="field-hint">Photos or PDFs, kept at their original size. Several files make one bill with several pages.</span>
+        <FilePickers onPick={addFiles} chooseLabel={items.length ? "Add more" : "Choose files"} />
+        <span className="field-hint">
+          Each photo or PDF is saved as its own bill, at its original size. To keep several pages together, open a bill and use Add
+          pages.
+        </span>
       </div>
-
-      <label className="field">
-        <span className="field-label">Bill name</span>
-        <input
-          className="input"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setNameTouched(true);
-          }}
-          placeholder="e.g. Fridge invoice"
-          required
-        />
-      </label>
     </form>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Plus, ReceiptText } from "lucide-react";
+import { Pencil, Plus, ReceiptText, Trash2 } from "lucide-react";
 import PageHeader from "../../components/ui/PageHeader";
 import EmptyState from "../../components/ui/EmptyState";
 import ErrorBanner from "../../components/ui/ErrorBanner";
@@ -13,7 +13,7 @@ import AddBillSheet from "./AddBillSheet";
 const RENAME_FORM_ID = "rename-bill-folder-form";
 
 // One folder's bills, newest first.
-export default function FolderView({ folder, bills, folders, error, setError, run, onBack, onOpenBill }) {
+export default function FolderView({ folder, bills, folders, error, setError, run, navigate, onBack, onOpenBill }) {
   const [sheet, setSheet] = useState(null); // null | "bill" | "edit"
 
   function open(kind) {
@@ -39,7 +39,7 @@ export default function FolderView({ folder, bills, folders, error, setError, ru
         subtitle={`${bills.length} bill${bills.length === 1 ? "" : "s"}${folder.size ? ` · ${fileSize(folder.size)}` : ""}`}
         onBack={onBack}
         actions={
-          <button type="button" className="icon-btn" onClick={() => open("edit")} aria-label="Rename or delete folder">
+          <button type="button" className="icon-btn" onClick={() => open("edit")} aria-label="Rename folder">
             <Pencil size={20} />
           </button>
         }
@@ -48,7 +48,7 @@ export default function FolderView({ folder, bills, folders, error, setError, ru
         {!sheet && <ErrorBanner message={error} onDismiss={() => setError("")} />}
 
         <button type="button" className="btn btn-primary btn-block" onClick={() => open("bill")}>
-          <Plus size={18} /> Add bill
+          <Plus size={18} /> Add bills
         </button>
 
         {bills.length ? (
@@ -56,6 +56,10 @@ export default function FolderView({ folder, bills, folders, error, setError, ru
         ) : (
           <EmptyState icon={ReceiptText}>This folder is empty. Add a bill to it.</EmptyState>
         )}
+
+        <button type="button" className="btn btn-danger-ghost btn-block" onClick={handleDelete}>
+          <Trash2 size={18} /> Delete folder
+        </button>
       </div>
 
       {sheet === "bill" && (
@@ -65,16 +69,17 @@ export default function FolderView({ folder, bills, folders, error, setError, ru
           error={error}
           run={run}
           onClose={close}
-          onSaved={(bill) => {
+          onSaved={(saved) => {
             setSheet(null);
-            onOpenBill(bill);
+            // Saved into another folder from here: go and show them there.
+            if (saved[0].folder_id !== folder.id) navigate(`bills/${saved[0].folder_id}`);
           }}
         />
       )}
 
       {sheet === "edit" && (
         <FormSheet
-          title="Edit folder"
+          title="Rename folder"
           formId={RENAME_FORM_ID}
           submitLabel="Save changes"
           error={error}

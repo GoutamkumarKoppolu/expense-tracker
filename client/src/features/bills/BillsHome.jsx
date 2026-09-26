@@ -46,7 +46,7 @@ export default function BillsHome({ folders, bills, error, setError, run, naviga
 
         <div className="button-row">
           <button type="button" className="btn btn-primary btn-block" onClick={() => open("bill")}>
-            <Plus size={18} /> Add bill
+            <Plus size={18} /> Add bills
           </button>
           <button type="button" className="btn btn-soft btn-block" onClick={() => open("folder")}>
             <FolderPlus size={18} /> New folder
@@ -88,9 +88,9 @@ export default function BillsHome({ folders, bills, error, setError, run, naviga
           error={error}
           run={run}
           onClose={close}
-          onSaved={(bill) => {
+          onSaved={(saved) => {
             setSheet(null);
-            onOpenBill(bill);
+            navigate(`bills/${saved[0].folder_id}`);
           }}
         />
       )}

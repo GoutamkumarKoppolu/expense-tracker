@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Share2 } from "lucide-react";
+import { Pencil, Share2, Trash2 } from "lucide-react";
 import PageHeader from "../../components/ui/PageHeader";
 import ErrorBanner from "../../components/ui/ErrorBanner";
 import FormSheet from "../../components/ui/FormSheet";
@@ -84,6 +84,9 @@ export default function BillView({ bill, folder, folders, error, setError, run, 
         <FilePickers onPick={handleAddPages} chooseLabel="Add pages" />
         <button type="button" className="btn btn-primary btn-block" onClick={handleShare} disabled={Boolean(busy)}>
           <Share2 size={18} /> Share bill
+        </button>
+        <button type="button" className="btn btn-danger-ghost btn-block" onClick={handleDeleteBill}>
+          <Trash2 size={18} /> Delete bill
         </button>
       </div>
 

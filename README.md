@@ -27,7 +27,7 @@ Most expense apps give you a single running total and nothing more. Real money i
 | **Credit card statements don't say what each charge was for.** | A separate **Credit cards** page where you log spends as you make them. At bill time, compare your logged total with the statement; the difference is what you missed or should question. Card spends never touch your balance, so nothing is counted twice. |
 | **A loan or a trip is spread over many months.** | Use the same **tag** every time ("Car loan", "Goa trip"). The **Tags** page shows every tag across all months with totals, broken down month by month. |
 | **Big events blow past the plan.** A wedding or a new car has many parts, and it's hard to see what's left overall and for each part. | **Budgets**: give an event a total, optionally split it into sub-budgets (Venue, Catering…), and note down each spend. Every spend comes off its sub-budget and the total, you see what's left at a glance, and going over is shown in red instead of blocked. Budgets are a plan, so they never touch your balance. |
-| **Bills get lost when you need them.** The fridge breaks and the invoice is somewhere in a drawer or a chat. | **Bills**: photos and PDFs of bills, warranties and receipts, kept at original quality in folders you name (Warranties, Electricity, Car…). A bill can have several pages, you can search by name, and open or share it straight from the app. Stored on the phone and included in backups. |
+| **Bills get lost when you need them.** The fridge breaks and the invoice is somewhere in a drawer or a chat. | **Bills**: photos and PDFs of bills, warranties and receipts, kept at original quality in folders you name (Warranties, Electricity, Car…). Each file is its own bill (pages can be added to keep a multi-page bill together), you can search by name, and open or share it straight from the app. Stored on the phone and included in backups. |
 | **Your data is stuck on one phone.** | **Backup & restore** exports everything to one file you can keep on Drive. Import it on a new phone or reinstall. Older backups keep working as the app gains features. |
 | **Finance apps want your SMS, a login and your data on their servers.** | Fully offline. Data lives in the phone's local database (IndexedDB) and nothing is sent anywhere. |
 | **Apps built for two thumbs on a tablet.** | A **One UI-style, one-handed layout**: read-only information at the top, and everything you tap (tabs, the + button, forms, filters) within thumb reach at the bottom. |
@@ -66,9 +66,9 @@ Most expense apps give you a single running total and nothing more. Real money i
 
 ### Bills
 - **Keep important bills** as photos or PDFs, sorted into **folders** you create (one level: a folder holds any number of bills).
-- **Add a bill** by taking a photo or choosing files; several files make one bill with several pages. Files are kept at their original size and nothing inside them is read.
+- **Add bills** by taking a photo or choosing several files at once: each file becomes its own bill, named after the file (rename any before saving). To keep a multi-page bill together, open it and use **Add pages**. Files are kept at their original size and nothing inside them is read.
 - **View and share:** photos show in the app; tap a photo or **Open** a PDF to view it in your phone's own viewer (to zoom), or **Share** the whole bill to Drive, WhatsApp or email.
-- **Organise:** rename or move a bill to another folder, add or delete pages, rename or delete folders, and **search** bills across all folders.
+- **Organise:** rename or move a bill to another folder, add or delete pages, rename folders, delete a bill or a whole folder, and **search** bills across all folders.
 - **Backed up:** bill files are included in the backup file, so they move with you to a new phone.
 
 ### Make it yours
@@ -82,8 +82,8 @@ Most expense apps give you a single running total and nothing more. Real money i
 - **Offline and private:** no network calls during normal use and no account.
 
 ### Android app
-- A real installable `.apk` (Capacitor), with the Android back button working between pages.
-- Built for Android 15's edge-to-edge screens: content is kept clear of the status bar and the gesture bar, and those bars take on your theme's colours.
+- A real installable `.apk` (Capacitor), with the Android back button going up one level at a time (it closes an open sheet first, and only leaves the app from Home).
+- Built for Android 15's edge-to-edge screens: content is kept clear of the status bar, the gesture bar and the keyboard, and the bars take on your theme's colours.
 
 <p align="center">
   <img src="docs/screenshots/add-transaction.png" width="180" alt="Add transaction sheet with the Deduct from current balance switch" />
@@ -182,7 +182,7 @@ npx cap open android  # open the native project in Android Studio
 client/
   src/
     App.jsx              App shell: page registry (ROUTES), bottom navigation, add/edit sheet
-    app/                 Hash router (Android back button), bottom nav, system bar sync
+    app/                 Hash router, Android back button handling, bottom nav, system bar sync
     api.js               Core ledger data access (transactions, options, overview)
     domain/              Pure business rules (balance, deduction flag, filters)
     features/
